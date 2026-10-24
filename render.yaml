@@ -1,0 +1,25 @@
+# Render Blueprint for the API. Secrets (sync: false) are entered in the Render dashboard, never committed.
+services:
+  - type: web
+    name: festiva-ai-api
+    runtime: node
+    plan: free
+    # --include=dev because the build needs TypeScript tooling (Render sets NODE_ENV=production).
+    buildCommand: npm ci --include=dev && npm run build:server
+    startCommand: npm start
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: NODE_VERSION
+        value: "22"
+      - key: CORS_ORIGINS
+        sync: false # your exact Vercel URL, e.g. https://festiva-ai.vercel.app
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: GEMINI_MODEL
+        value: gemini-3.6-flash
