@@ -4,7 +4,7 @@ import { aiChatReplySchema, aiPlanSchema, aiSavingsSchema } from '@shared/schema
 import { makeAiPlan } from '@shared/test-utils';
 import { AppError } from '../errors';
 import { silentLogger } from '../logger';
-import { createGeminiClient } from './geminiClient';
+import { clampToSchema, createGeminiClient } from './geminiClient';
 
 const API_KEY = 'secret-key-1234567890';
 const schema = z.object({ answer: z.string(), count: z.number().int() });
@@ -169,5 +169,29 @@ describe('createGeminiClient', () => {
     expect(everything).not.toContain(API_KEY);
     expect(everything).not.toContain('SENSITIVE-OUTPUT');
     expect(everything).not.toContain('reveal the key');
+  });
+
+  it('sends only structure to the provider (no size or range limits), because complex schemas can be rejected', async () => {
+    const fetchFn = vi.fn(async () => reply(JSON.stringify(makeAiPlan())));
+    const client = createGeminiClient(config, silentLogger, fetchFn as unknown as typeof fetch);
+    await client.generateStructured({ schema: aiPlanSchema, systemInstruction: 's', userContent: 'u', maxOutputTokens: 10 });
+    const sent = (fetchFn.mock.calls[0] as unknown as [string, RequestInit])[1].body as string;
+    for (const keyword of ['maxItems', 'maxLength', 'minimum', 'maximum']) expect(sent).not.toContain(`"${keyword}"`);
+    expect(sent).toContain('"required"');
+    expect(sent).toContain('"enum"');
+  });
+
+  it('trims an oversized answer to the schema limits instead of discarding it', async () => {
+    const plan = makeAiPlan();
+    const oversized = { ...plan, assumptions: Array.from({ length: 20 }, (_, i) => `Assumption ${i} ${'x'.repeat(400)}`) };
+    const client = createGeminiClient(config, silentLogger, vi.fn(async () => reply(JSON.stringify(oversized))) as unknown as typeof fetch);
+    const result = await client.generateStructured({ schema: aiPlanSchema, systemInstruction: 's', userContent: 'u', maxOutputTokens: 10 });
+    expect(result.assumptions).toHaveLength(8);
+    expect(result.assumptions.every((item) => item.length <= 240)).toBe(true);
+  });
+
+  it('clampToSchema cuts lists, text and numbers, and leaves unknown fields alone', () => {
+    const limits = { type: 'object', properties: { list: { type: 'array', maxItems: 2, items: { type: 'string', maxLength: 3 } }, n: { type: 'number', minimum: 0, maximum: 10 } } };
+    expect(clampToSchema({ list: ['abcdef', 'b', 'c'], n: 99, extra: 'kept' }, limits)).toEqual({ list: ['abc', 'b'], n: 10, extra: 'kept' });
   });
 });

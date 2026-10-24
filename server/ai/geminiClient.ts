@@ -26,16 +26,69 @@ interface GeminiResponse {
   error?: { message?: string; status?: string };
 }
 
-const schemaCache = new WeakMap<z.ZodType, Record<string, unknown>>();
+type JsonSchema = Record<string, unknown>;
+
+/** Size and range limits. Kept out of the schema sent to the provider (it can reject complex schemas), and enforced locally instead. */
+const BOUND_KEYS = ['maxLength', 'minLength', 'maxItems', 'minItems', 'minimum', 'maximum'] as const;
+
+/** Copy of a JSON Schema without the bound keywords. Property names that happen to equal a keyword are left alone. */
+function withoutBounds(node: unknown): unknown {
+  if (Array.isArray(node)) return node.map(withoutBounds);
+  if (node === null || typeof node !== 'object') return node;
+  const entries = Object.entries(node as JsonSchema)
+    .filter(([key, value]) => !(BOUND_KEYS as readonly string[]).includes(key) || (typeof value === 'object' && value !== null))
+    .map(([key, value]) => [key, key === 'properties' ? mapValues(value as JsonSchema, withoutBounds) : withoutBounds(value)]);
+  return Object.fromEntries(entries);
+}
+
+const mapValues = (record: JsonSchema, fn: (value: unknown) => unknown): JsonSchema =>
+  Object.fromEntries(Object.entries(record).map(([key, value]) => [key, fn(value)]));
+
+/**
+ * Trims a model answer to the limits in the schema: extra list items and over-long text are cut, numbers are
+ * pulled into range. A slightly oversized answer is then usable instead of being thrown away.
+ */
+export function clampToSchema(value: unknown, schema: JsonSchema): unknown {
+  if (Array.isArray(value)) {
+    const max = typeof schema.maxItems === 'number' ? schema.maxItems : value.length;
+    const items = (schema.items ?? {}) as JsonSchema;
+    return value.slice(0, max).map((item) => clampToSchema(item, items));
+  }
+  if (typeof value === 'string') {
+    return typeof schema.maxLength === 'number' && value.length > schema.maxLength ? value.slice(0, schema.maxLength).trimEnd() : value;
+  }
+  if (typeof value === 'number') {
+    const min = typeof schema.minimum === 'number' ? schema.minimum : value;
+    const max = typeof schema.maximum === 'number' ? schema.maximum : value;
+    return Math.min(Math.max(value, min), max);
+  }
+  if (value !== null && typeof value === 'object') {
+    const properties = (schema.properties ?? {}) as Record<string, JsonSchema>;
+    return Object.fromEntries(
+      Object.entries(value as JsonSchema).map(([key, child]) => [key, properties[key] ? clampToSchema(child, properties[key]) : child]),
+    );
+  }
+  return value;
+}
+
+interface ProviderSchemas {
+  /** Sent to the provider: structure and allowed values only. */
+  forProvider: JsonSchema;
+  /** Full schema, used to trim the answer before validation. */
+  full: JsonSchema;
+}
+
+const schemaCache = new WeakMap<z.ZodType, ProviderSchemas>();
 
 /** Converts a zod schema to the JSON Schema the provider uses to constrain its output. */
-function providerSchema(schema: z.ZodType): Record<string, unknown> {
+function providerSchemas(schema: z.ZodType): ProviderSchemas {
   const cached = schemaCache.get(schema);
   if (cached) return cached;
-  const json = z.toJSONSchema(schema) as Record<string, unknown>;
-  delete json.$schema;
-  schemaCache.set(schema, json);
-  return json;
+  const full = z.toJSONSchema(schema) as JsonSchema;
+  delete full.$schema;
+  const result = { full, forProvider: withoutBounds(full) as JsonSchema };
+  schemaCache.set(schema, result);
+  return result;
 }
 
 function httpError(status: number): AppError {
@@ -103,12 +156,13 @@ export function createGeminiClient(
       if (!config.apiKey) {
         throw new AppError(503, 'AI_NOT_CONFIGURED', 'The AI assistant is not configured on this server yet.');
       }
+      const schemas = providerSchemas(request.schema);
       const body = {
         systemInstruction: { parts: [{ text: request.systemInstruction }] },
         contents: [{ role: 'user', parts: [{ text: request.userContent }] }],
         generationConfig: {
           responseMimeType: 'application/json',
-          responseJsonSchema: providerSchema(request.schema),
+          responseJsonSchema: schemas.forProvider,
           maxOutputTokens: request.maxOutputTokens,
           temperature: request.temperature ?? 0.7,
           ...(config.thinkingLevel ? { thinkingConfig: { thinkingLevel: config.thinkingLevel } } : {}),
@@ -118,7 +172,7 @@ export function createGeminiClient(
       for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt += 1) {
         const text = extractText(await callProvider(config.apiKey, body));
         try {
-          const parsed = request.schema.safeParse(parseJson(text));
+          const parsed = request.schema.safeParse(clampToSchema(parseJson(text), schemas.full));
           if (parsed.success) return parsed.data;
           logger.warn(`Gemini output failed schema validation (attempt ${attempt}): ${parsed.error.issues.length} issue(s)`);
         } catch {

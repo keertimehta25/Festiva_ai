@@ -17,7 +17,8 @@ Rules you must always follow:
 6. Use the event's budget, guest count, date, city, food preference, indoor or outdoor setting, cultural notes and priorities in every recommendation.
 7. If inputs conflict or are too thin, say so in clarifyingQuestions and state the assumptions you made.
 8. Be specific and practical. Avoid generic filler. Write plain text only: no markdown and no HTML.
-9. Respond only with JSON that matches the provided schema.`;
+9. Keep every list short (no more than 6 items unless a task says otherwise) and every text field to one or two sentences.
+10. Respond only with JSON that matches the provided schema.`;
 
 export const PLAN_SYSTEM_PROMPT = `${BASE_RULES}
 
