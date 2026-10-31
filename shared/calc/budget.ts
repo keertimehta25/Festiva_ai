@@ -50,7 +50,11 @@ function categoryStatus(allocated: number, actual: number): CategoryStatus {
   return 'ok';
 }
 
-export function summarizeBudget(totalBudget: number, allocations: Allocations, expenses: ExpenseRecord[]): BudgetSummary {
+export function summarizeBudget(
+  totalBudget: number,
+  allocations: Allocations,
+  expenses: ExpenseRecord[],
+): BudgetSummary {
   const categories = BUDGET_CATEGORIES.map((category): CategoryBudget => {
     const inCategory = expenses.filter((expense) => expense.category === category);
     const allocated = allocations[category];
@@ -114,7 +118,8 @@ export function scaleAllocations(allocations: Allocations, eventType: EventType,
 
 /** Moves money between categories (or from the unallocated pool) without ever going negative. */
 export function applyReallocation(allocations: Allocations, move: ReallocationSuggestion): Allocations {
-  if (!Number.isInteger(move.amount) || move.amount <= 0) throw new RangeError('Amount must be a positive whole number');
+  if (!Number.isInteger(move.amount) || move.amount <= 0)
+    throw new RangeError('Amount must be a positive whole number');
   const next = { ...allocations };
   if (move.from !== 'unallocated') {
     if (next[move.from] < move.amount) throw new RangeError('Not enough allocated in the source category');

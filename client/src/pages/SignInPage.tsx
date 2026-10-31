@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from 'react';
+import { useState, type SyntheticEvent } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../auth/AuthProvider';
 import { Field } from '../components/ui/Field';
@@ -17,12 +17,18 @@ export default function SignInPage() {
   const destination = (location.state as { from?: string } | null)?.from ?? '/dashboard';
   if (session) return <Navigate to={destination} replace />;
 
-  async function handleSubmit(event: FormEvent) {
+  async function handleSubmit(event: SyntheticEvent) {
     event.preventDefault();
     setError(null);
     setInfo(null);
-    if (!email.includes('@')) return setError('Enter a valid email address.');
-    if (password.length < 8) return setError('Use a password with at least 8 characters.');
+    if (!email.includes('@')) {
+      setError('Enter a valid email address.');
+      return;
+    }
+    if (password.length < 8) {
+      setError('Use a password with at least 8 characters.');
+      return;
+    }
     setBusy(true);
     if (mode === 'signin') {
       setError(await signIn(email, password));
@@ -39,23 +45,55 @@ export default function SignInPage() {
       <div className="card">
         <h1>{mode === 'signin' ? 'Welcome back' : 'Create your account'}</h1>
         <p className="muted">Your events are private to your account.</p>
-        {!configured && <Notice tone="danger" live><p>Sign-in is not configured for this deployment.</p></Notice>}
-        <form onSubmit={handleSubmit} noValidate>
-          {error && <Notice tone="danger" live><p>{error}</p></Notice>}
-          {info && <Notice tone="success" live><p>{info}</p></Notice>}
+        {!configured && (
+          <Notice tone="danger" live>
+            <p>Sign-in is not configured for this deployment.</p>
+          </Notice>
+        )}
+        <form onSubmit={(event) => void handleSubmit(event)} noValidate>
+          {error && (
+            <Notice tone="danger" live>
+              <p>{error}</p>
+            </Notice>
+          )}
+          {info && (
+            <Notice tone="success" live>
+              <p>{info}</p>
+            </Notice>
+          )}
           <Field label="Email">
-            <input className="input" type="email" autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} />
+            <input
+              className="input"
+              type="email"
+              autoComplete="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
           </Field>
           <Field label="Password" hint={mode === 'signup' ? 'At least 8 characters.' : undefined}>
-            <input className="input" type="password" autoComplete={mode === 'signin' ? 'current-password' : 'new-password'} value={password} onChange={(e) => setPassword(e.target.value)} />
+            <input
+              className="input"
+              type="password"
+              autoComplete={mode === 'signin' ? 'current-password' : 'new-password'}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+            />
           </Field>
-          <button type="submit" className="btn btn-primary" style={{ width: '100%' }} disabled={busy || !configured}>
+          <button type="submit" className="btn btn-primary w-full" disabled={busy || !configured}>
             {busy ? 'Please wait…' : mode === 'signin' ? 'Sign in' : 'Create account'}
           </button>
         </form>
-        <p style={{ marginTop: '1rem' }}>
+        <p className="mt-md">
           {mode === 'signin' ? 'New here? ' : 'Already have an account? '}
-          <button type="button" className="btn btn-ghost btn-sm" onClick={() => { setMode(mode === 'signin' ? 'signup' : 'signin'); setError(null); setInfo(null); }}>
+          <button
+            type="button"
+            className="btn btn-ghost btn-sm"
+            onClick={() => {
+              setMode(mode === 'signin' ? 'signup' : 'signin');
+              setError(null);
+              setInfo(null);
+            }}
+          >
             {mode === 'signin' ? 'Create an account' : 'Sign in instead'}
           </button>
         </p>

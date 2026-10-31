@@ -20,8 +20,18 @@ function limiter(options: { windowMs: number; limit: number; message: string; pe
 
 /** Broad protection for every API route, per client IP. */
 export const apiLimiter = (limit = 300): RequestHandler =>
-  limiter({ windowMs: 15 * 60_000, limit, perUser: false, message: 'Too many requests. Please slow down and try again shortly.' });
+  limiter({
+    windowMs: 15 * 60_000,
+    limit,
+    perUser: false,
+    message: 'Too many requests. Please slow down and try again shortly.',
+  });
 
 /** Stricter, per signed-in user, for routes that call the paid/limited AI provider. */
 export const aiLimiter = (limit = 20): RequestHandler =>
-  limiter({ windowMs: 10 * 60_000, limit, perUser: true, message: 'You have used the AI assistant a lot recently. Please wait a few minutes and try again.' });
+  limiter({
+    windowMs: 10 * 60_000,
+    limit,
+    perUser: true,
+    message: 'You have used the AI assistant a lot recently. Please wait a few minutes and try again.',
+  });

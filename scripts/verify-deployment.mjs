@@ -20,34 +20,64 @@ const call = (path, init = {}) => fetch(`${base}/api${path}`, { signal: AbortSig
 console.log('Note: Render free services sleep after 15 minutes idle; the first request can take about a minute.');
 
 const health = await call('/health').catch((error) => {
-  console.error(`FAIL  Could not reach ${base}/api/health: ${error.cause?.code ?? error.name}. Check the URL, and wait a minute if the Render service was asleep.`);
+  console.error(
+    `FAIL  Could not reach ${base}/api/health: ${error.cause?.code ?? error.name}. Check the URL, and wait a minute if the Render service was asleep.`,
+  );
   process.exit(1);
 });
 const body = await health.json().catch(() => ({}));
 check('Health endpoint answers 200', health.status === 200, `HTTP ${health.status}`);
-check('AI key is configured on the server', body?.data?.aiConfigured === true, `aiConfigured=${body?.data?.aiConfigured}`);
+check(
+  'AI key is configured on the server',
+  body?.data?.aiConfigured === true,
+  `aiConfigured=${body?.data?.aiConfigured}`,
+);
 
 const anonymous = await call('/events');
 check('Private routes reject anonymous requests (401)', anonymous.status === 401, `HTTP ${anonymous.status}`);
 
 const allowed = await call('/health', { headers: { Origin: webOrigin } });
-check('CORS allows your web origin', allowed.headers.get('access-control-allow-origin') === webOrigin, `got ${allowed.headers.get('access-control-allow-origin')}`);
+check(
+  'CORS allows your web origin',
+  allowed.headers.get('access-control-allow-origin') === webOrigin,
+  `got ${allowed.headers.get('access-control-allow-origin')}`,
+);
 const blocked = await call('/health', { headers: { Origin: 'https://evil.example' } });
 check('CORS blocks other origins', blocked.headers.get('access-control-allow-origin') === null);
-check('Security headers present', health.headers.get('x-content-type-options') === 'nosniff' && Boolean(health.headers.get('content-security-policy')));
+check(
+  'Security headers present',
+  health.headers.get('x-content-type-options') === 'nosniff' && Boolean(health.headers.get('content-security-policy')),
+);
 
 if (token) {
   const auth = { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' };
   const list = await call('/events', { headers: auth });
   check('Signed-in request to the database works', list.status === 200, `HTTP ${list.status}`);
   if (list.status === 200) {
-    const created = await call('/events', { method: 'POST', headers: auth, body: JSON.stringify({ name: 'Deployment check (safe to delete)', eventType: 'birthday', totalBudget: 50000, guestCount: 40 }) });
+    const created = await call('/events', {
+      method: 'POST',
+      headers: auth,
+      body: JSON.stringify({
+        name: 'Deployment check (safe to delete)',
+        eventType: 'birthday',
+        totalBudget: 50000,
+        guestCount: 40,
+      }),
+    });
     const event = (await created.json()).data?.event;
     check('Event can be created and stored', created.status === 201 && Boolean(event?.id), `HTTP ${created.status}`);
     if (event?.id) {
-      const chat = await call(`/events/${event.id}/ai/chat`, { method: 'POST', headers: auth, body: JSON.stringify({ message: 'In one sentence, what should I book first?' }) });
+      const chat = await call(`/events/${event.id}/ai/chat`, {
+        method: 'POST',
+        headers: auth,
+        body: JSON.stringify({ message: 'In one sentence, what should I book first?' }),
+      });
       const reply = await chat.json();
-      check('Real Gemini copilot reply works', chat.status === 200 && typeof reply.data?.reply === 'string', `HTTP ${chat.status} ${reply.error?.code ?? ''}`);
+      check(
+        'Real Gemini copilot reply works',
+        chat.status === 200 && typeof reply.data?.reply === 'string',
+        `HTTP ${chat.status} ${reply.error?.code ?? ''}`,
+      );
       const removed = await call(`/events/${event.id}`, { method: 'DELETE', headers: auth });
       check('Test event cleaned up', removed.status === 204, `HTTP ${removed.status}`);
     }

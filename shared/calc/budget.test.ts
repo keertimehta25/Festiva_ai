@@ -70,7 +70,10 @@ describe('summarizeBudget', () => {
   it('recalculates when an expense is added or edited', () => {
     const expense = makeExpense({ category: 'venue', actualAmount: 10_000 });
     const before = summarizeBudget(600_000, allocations, [expense]);
-    const after = summarizeBudget(600_000, allocations, [{ ...expense, actualAmount: 25_000 }, makeExpense({ category: 'decoration', actualAmount: 5_000 })]);
+    const after = summarizeBudget(600_000, allocations, [
+      { ...expense, actualAmount: 25_000 },
+      makeExpense({ category: 'decoration', actualAmount: 5_000 }),
+    ]);
     expect(before.remaining).toBe(590_000);
     expect(after.remaining).toBe(570_000);
   });
@@ -94,7 +97,10 @@ describe('summarizeBudget', () => {
   });
 
   it('detects total overspending and handles a zero budget safely', () => {
-    expect(summarizeBudget(100, makeAllocations({ venue: 100 }), [makeExpense({ category: 'venue', actualAmount: 150 })]).overBudget).toBe(true);
+    expect(
+      summarizeBudget(100, makeAllocations({ venue: 100 }), [makeExpense({ category: 'venue', actualAmount: 150 })])
+        .overBudget,
+    ).toBe(true);
     expect(summarizeBudget(0, makeAllocations(), []).percentConsumed).toBe(0);
   });
 });
@@ -116,14 +122,10 @@ describe('reallocation', () => {
   });
 
   it('never takes money that is already spent or estimated in the donor category', () => {
-    const summary = summarizeBudget(
-      200_000,
-      makeAllocations({ venue: 100_000, catering: 100_000 }),
-      [
-        makeExpense({ category: 'venue', actualAmount: 130_000 }),
-        makeExpense({ category: 'catering', actualAmount: 60_000, estimatedAmount: 90_000 }),
-      ],
-    );
+    const summary = summarizeBudget(200_000, makeAllocations({ venue: 100_000, catering: 100_000 }), [
+      makeExpense({ category: 'venue', actualAmount: 130_000 }),
+      makeExpense({ category: 'catering', actualAmount: 60_000, estimatedAmount: 90_000 }),
+    ]);
     const moves = suggestReallocations(summary);
     expect(moves).toEqual([{ from: 'catering', to: 'venue', amount: 10_000 }]);
   });

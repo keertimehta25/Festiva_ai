@@ -22,18 +22,18 @@ Submission window: 19 Oct 2026, 4:33 PM IST to **1 Nov 2026, 11:59 PM IST**. Max
 
 Target 3–4 minutes. Open the live site once a minute beforehand (Render wakes slowly) and create the account before recording. Do not show any API keys, tokens or the Supabase dashboard secrets.
 
-| Time | Show | Say |
-|---|---|---|
-| 0:00 | Landing page, hero, preview budget tabs | "Festiva AI helps people plan weddings, birthdays and community events without scattered spreadsheets." |
-| 0:20 | Click **Plan My Event**; fill name, city, ₹8,00,000, 300 guests, vegetarian, priorities | "One short form. Optional fields have sensible defaults." |
-| 0:50 | Submit, then **AI plan → Generate AI plan** (real Gemini call) | "This calls Gemini from my server. The key never reaches the browser." While it runs, point out the "AI suggestion, not a quote" notice |
-| 1:20 | Scroll the plan: concept, budget split, timeline, vendor checklist, schedule, risks | "Amounts are labelled estimates with stated assumptions. No vendors are invented." |
-| 1:50 | **Apply timeline to tasks**, open **Tasks**; show overdue/upcoming, filter, complete one | "Due dates are worked back from the event date. Progress is calculated by code." |
-| 2:15 | **Budget**: add an expense; remaining balance and chart update; add one that overspends to show the warning and reallocation suggestion | "All the maths is deterministic, not done by the AI." |
-| 2:45 | **Vendors**: add a vendor, set booked and advance paid; show pending payment | "Vendors are records I enter; the app doesn't claim to verify real businesses." |
-| 3:10 | **Copilot**: use a quick prompt; apply a proposed task | "It sees my budget, tasks and vendors. Changes need my confirmation." |
-| 3:30 | Refresh the page; show everything persisted | "Saved per account in Postgres with row-level security." |
-| 3:40 | Slide or README: stack, 212 + 3 tests, security, accessibility audit, Vercel + Render + Supabase | "React, TypeScript, Express, Supabase, Gemini. Tests cover the maths, validation, authorization and AI failure handling." |
+| Time | Show                                                                                                                                    | Say                                                                                                                                     |
+| ---- | --------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
+| 0:00 | Landing page, hero, preview budget tabs                                                                                                 | "Festiva AI helps people plan weddings, birthdays and community events without scattered spreadsheets."                                 |
+| 0:20 | Click **Plan My Event**; fill name, city, ₹8,00,000, 300 guests, vegetarian, priorities                                                 | "One short form. Optional fields have sensible defaults."                                                                               |
+| 0:50 | Submit, then **AI plan → Generate AI plan** (real Gemini call)                                                                          | "This calls Gemini from my server. The key never reaches the browser." While it runs, point out the "AI suggestion, not a quote" notice |
+| 1:20 | Scroll the plan: concept, budget split, timeline, vendor checklist, schedule, risks                                                     | "Amounts are labelled estimates with stated assumptions. No vendors are invented."                                                      |
+| 1:50 | **Apply timeline to tasks**, open **Tasks**; show overdue/upcoming, filter, complete one                                                | "Due dates are worked back from the event date. Progress is calculated by code."                                                        |
+| 2:15 | **Budget**: add an expense; remaining balance and chart update; add one that overspends to show the warning and reallocation suggestion | "All the maths is deterministic, not done by the AI."                                                                                   |
+| 2:45 | **Vendors**: add a vendor, set booked and advance paid; show pending payment                                                            | "Vendors are records I enter; the app doesn't claim to verify real businesses."                                                         |
+| 3:10 | **Copilot**: use a quick prompt; apply a proposed task                                                                                  | "It sees my budget, tasks and vendors. Changes need my confirmation."                                                                   |
+| 3:30 | Refresh the page; show everything persisted                                                                                             | "Saved per account in Postgres with row-level security."                                                                                |
+| 3:40 | Slide or README: stack, 212 + 3 tests, security, accessibility audit, Vercel + Render + Supabase                                        | "React, TypeScript, Express, Supabase, Gemini. Tests cover the maths, validation, authorization and AI failure handling."               |
 
 **Upload:** YouTube Studio → Create → Upload videos → Visibility **Unlisted** → copy the link. Or Google Drive → upload → Share → General access **Anyone with the link: Viewer**. Open the link in a private window to confirm.
 
@@ -84,11 +84,11 @@ Try it: <live link>
 
 ## Evaluation checklist by judging criterion
 
-| Criterion | Where it is addressed |
-|---|---|
-| **Code quality** | Shared zod schemas as single source of truth; repository and `AiService` interfaces; domain maths isolated in `shared/calc` with tests; small feature folders; strict TypeScript with `noUncheckedIndexedAccess`; ESLint with a11y rules; central error handler |
-| **Security** | See README "Security": auth on every private route, user-scoped queries, RLS without policies, validation, limits, CORS, helmet, prompt-injection separation, no secrets or sensitive logging, tested cross-user access |
-| **Efficiency** | Route-level code splitting, bounded queries and prompts, one model call per request, in-flight guard and per-user AI rate limit, short auth cache (hash only, success only), server-side dashboard aggregates, deterministic local maths |
-| **Testing** | 212 Vitest tests + 3 Playwright tests; failures, timeouts, malformed AI output and authorization all covered |
-| **Accessibility** | Landmarks, labels, dialogs, live regions, chart table alternative, reduced motion, contrast script, axe in jsdom and real browser. Manual screen-reader pass not done |
-| **Problem alignment** | Weddings, birthdays, community events; budgets, timelines, vendor checklists and personalised ideas, all backed by a real GenAI integration |
+| Criterion             | Where it is addressed                                                                                                                                                                                                                                           |
+| --------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Code quality**      | Shared zod schemas as single source of truth; repository and `AiService` interfaces; domain maths isolated in `shared/calc` with tests; small feature folders; strict TypeScript with `noUncheckedIndexedAccess`; ESLint with a11y rules; central error handler |
+| **Security**          | See README "Security": auth on every private route, user-scoped queries, RLS without policies, validation, limits, CORS, helmet, prompt-injection separation, no secrets or sensitive logging, tested cross-user access                                         |
+| **Efficiency**        | Route-level code splitting, bounded queries and prompts, one model call per request, in-flight guard and per-user AI rate limit, short auth cache (hash only, success only), server-side dashboard aggregates, deterministic local maths                        |
+| **Testing**           | 212 Vitest tests + 3 Playwright tests; failures, timeouts, malformed AI output and authorization all covered                                                                                                                                                    |
+| **Accessibility**     | Landmarks, labels, dialogs, live regions, chart table alternative, reduced motion, contrast script, axe in jsdom and real browser. Manual screen-reader pass not done                                                                                           |
+| **Problem alignment** | Weddings, birthdays, community events; budgets, timelines, vendor checklists and personalised ideas, all backed by a real GenAI integration                                                                                                                     |

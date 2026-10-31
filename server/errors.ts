@@ -1,5 +1,5 @@
 import type { ErrorRequestHandler, RequestHandler } from 'express';
-import { z } from 'zod';
+import { type z } from 'zod';
 import type { ApiErrorBody } from '@shared/types';
 import type { Logger } from './logger';
 

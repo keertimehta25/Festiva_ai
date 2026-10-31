@@ -38,14 +38,21 @@ describe('platform behaviour', () => {
   it('returns 404 JSON for unknown routes and 400 for malformed JSON', async () => {
     const { app } = buildTestApp();
     expect((await asUser(app, 'token-alice').get('/api/nope')).body.error.code).toBe('NOT_FOUND');
-    const bad = await request(app).post('/api/events').set('Authorization', 'Bearer token-alice').set('Content-Type', 'application/json').send('{oops');
+    const bad = await request(app)
+      .post('/api/events')
+      .set('Authorization', 'Bearer token-alice')
+      .set('Content-Type', 'application/json')
+      .send('{oops');
     expect(bad.status).toBe(400);
     expect(bad.body.error.code).toBe('INVALID_JSON');
   });
 
   it('rejects oversized request bodies', async () => {
     const { app } = buildTestApp();
-    const response = await asUser(app, 'token-alice').post('/api/events', { ...validEventBody, culturalNotes: 'x'.repeat(100_000) });
+    const response = await asUser(app, 'token-alice').post('/api/events', {
+      ...validEventBody,
+      culturalNotes: 'x'.repeat(100_000),
+    });
     expect(response.status).toBe(413);
   });
 
@@ -103,12 +110,21 @@ describe('events', () => {
     const { app } = buildTestApp();
     const alice = asUser(app, 'token-alice');
     const event = await createEvent(alice);
-    await alice.post(`/api/events/${event.id}/expenses`, { title: 'Venue advance', category: 'venue', actualAmount: 80_000 });
+    await alice.post(`/api/events/${event.id}/expenses`, {
+      title: 'Venue advance',
+      category: 'venue',
+      actualAmount: 80_000,
+    });
 
     const list = await alice.get('/api/events');
     expect(list.status).toBe(200);
     expect(list.body.data).toHaveLength(1);
-    expect(list.body.data[0].summary).toMatchObject({ totalActual: 80_000, percentConsumed: 10, taskProgressPercent: 0, daysToEvent: 115 });
+    expect(list.body.data[0].summary).toMatchObject({
+      totalActual: 80_000,
+      percentConsumed: 10,
+      taskProgressPercent: 0,
+      daysToEvent: 115,
+    });
     expect(list.body.data[0].event.plan).toBeNull();
   });
 
@@ -198,7 +214,8 @@ describe('authorization between users', () => {
     const bob = asUser(app, 'token-bob');
     const aliceEvent = await createEvent(alice);
     const bobEvent = await createEvent(bob);
-    const aliceTask = (await alice.post(`/api/events/${aliceEvent.id}/tasks`, { title: 'Private' })).body.data as TaskRecord;
+    const aliceTask = (await alice.post(`/api/events/${aliceEvent.id}/tasks`, { title: 'Private' })).body
+      .data as TaskRecord;
 
     const viaOwnEvent = await bob.patch(`/api/events/${bobEvent.id}/tasks/${aliceTask.id}`, { title: 'Stolen' });
     expect(viaOwnEvent.status).toBe(404);
@@ -220,13 +237,23 @@ describe('tasks', () => {
     const event = await createEvent(alice);
     const base = `/api/events/${event.id}/tasks`;
 
-    const created = await alice.post(base, { title: 'Book band', priority: 'high', dueDate: '2026-12-01', category: 'entertainment' });
+    const created = await alice.post(base, {
+      title: 'Book band',
+      priority: 'high',
+      dueDate: '2026-12-01',
+      category: 'entertainment',
+    });
     expect(created.status).toBe(201);
     const task = created.body.data as TaskRecord;
     expect(task).toMatchObject({ status: 'pending', priority: 'high', notes: '' });
 
     const done = await alice.patch(`${base}/${task.id}`, { status: 'completed' });
-    expect(done.body.data).toMatchObject({ status: 'completed', priority: 'high', dueDate: '2026-12-01', category: 'entertainment' });
+    expect(done.body.data).toMatchObject({
+      status: 'completed',
+      priority: 'high',
+      dueDate: '2026-12-01',
+      category: 'entertainment',
+    });
 
     expect((await alice.delete(`${base}/${task.id}`)).status).toBe(204);
     expect((await alice.delete(`${base}/${task.id}`)).status).toBe(404);
@@ -263,7 +290,13 @@ describe('expenses and vendors', () => {
     const { app } = buildTestApp();
     const alice = asUser(app, 'token-alice');
     const event = await createEvent(alice);
-    const expense = (await alice.post(`/api/events/${event.id}/expenses`, { title: 'Decor', category: 'decoration', actualAmount: 5000 })).body.data;
+    const expense = (
+      await alice.post(`/api/events/${event.id}/expenses`, {
+        title: 'Decor',
+        category: 'decoration',
+        actualAmount: 5000,
+      })
+    ).body.data;
     const url = `/api/events/${event.id}/expenses/${expense.id}`;
 
     expect((await alice.patch(url, { actualAmount: 7000 })).body.data.actualAmount).toBe(7000);
@@ -277,15 +310,41 @@ describe('expenses and vendors', () => {
     const event = await createEvent(alice);
     const other = await createEvent(alice, { ...validEventBody, name: 'Another event' });
 
-    const tooMuch = await alice.post(`/api/events/${event.id}/vendors`, { name: 'Caterer', category: 'caterer', quotedPrice: 1000, advanceAmount: 5000 });
+    const tooMuch = await alice.post(`/api/events/${event.id}/vendors`, {
+      name: 'Caterer',
+      category: 'caterer',
+      quotedPrice: 1000,
+      advanceAmount: 5000,
+    });
     expect(tooMuch.status).toBe(400);
 
-    const vendor = (await alice.post(`/api/events/${event.id}/vendors`, { name: 'Caterer', category: 'caterer', quotedPrice: 100_000, advanceAmount: 20_000, bookingStatus: 'booked', paymentStatus: 'advance_paid' })).body.data as VendorRecord;
-    expect((await alice.patch(`/api/events/${event.id}/vendors/${vendor.id}`, { quotedPrice: 10_000 })).status).toBe(400);
+    const vendor = (
+      await alice.post(`/api/events/${event.id}/vendors`, {
+        name: 'Caterer',
+        category: 'caterer',
+        quotedPrice: 100_000,
+        advanceAmount: 20_000,
+        bookingStatus: 'booked',
+        paymentStatus: 'advance_paid',
+      })
+    ).body.data as VendorRecord;
+    expect((await alice.patch(`/api/events/${event.id}/vendors/${vendor.id}`, { quotedPrice: 10_000 })).status).toBe(
+      400,
+    );
 
-    const linked = await alice.post(`/api/events/${event.id}/expenses`, { title: 'Advance', category: 'catering', actualAmount: 20_000, vendorId: vendor.id });
+    const linked = await alice.post(`/api/events/${event.id}/expenses`, {
+      title: 'Advance',
+      category: 'catering',
+      actualAmount: 20_000,
+      vendorId: vendor.id,
+    });
     expect(linked.status).toBe(201);
-    const crossEvent = await alice.post(`/api/events/${other.id}/expenses`, { title: 'Advance', category: 'catering', actualAmount: 1, vendorId: vendor.id });
+    const crossEvent = await alice.post(`/api/events/${other.id}/expenses`, {
+      title: 'Advance',
+      category: 'catering',
+      actualAmount: 1,
+      vendorId: vendor.id,
+    });
     expect(crossEvent.status).toBe(422);
     expect(crossEvent.body.error.code).toBe('INVALID_VENDOR');
 
@@ -305,7 +364,9 @@ describe('AI endpoints', () => {
     expect(response.status).toBe(200);
     const plan = (response.body.data.event as EventRecord).plan;
     expect(plan?.model).toBe('test-model');
-    expect(sumAllocations(plan!.allocationAmounts)).toBe(800_000);
+    const amounts = plan?.allocationAmounts;
+    if (!amounts) throw new Error('The saved plan has no allocation amounts');
+    expect(sumAllocations(amounts)).toBe(800_000);
     expect(ai.generatePlan).toHaveBeenCalledTimes(1);
 
     const reloaded = (await alice.get(`/api/events/${event.id}`)).body.data as Workspace;
@@ -316,7 +377,12 @@ describe('AI endpoints', () => {
   it('does not start a second plan while one is running', async () => {
     let release: () => void = () => undefined;
     const slow = makeFakeAi({
-      generatePlan: vi.fn(() => new Promise((resolve) => { release = () => resolve(makeFakeAi().generatePlan({} as never)); })) as never,
+      generatePlan: vi.fn(
+        () =>
+          new Promise((resolve) => {
+            release = () => resolve(makeFakeAi().generatePlan({} as never));
+          }),
+      ) as never,
     });
     const { app } = buildTestApp({ ai: slow });
     const alice = asUser(app, 'token-alice');
@@ -362,15 +428,34 @@ describe('AI endpoints', () => {
       chat: vi.fn(async () => ({
         reply: 'Here is what I suggest.',
         proposals: [
-          { type: 'add_task' as const, summary: 'Add', task: { title: 'Call caterer', description: '', category: 'catering' as const, priority: 'high' as const, dueDate: '2020-01-01' } },
-          { type: 'reallocate' as const, summary: 'Too much', fromCategory: 'venue' as const, toCategory: 'catering' as const, amount: 99_999_999 },
+          {
+            type: 'add_task' as const,
+            summary: 'Add',
+            task: {
+              title: 'Call caterer',
+              description: '',
+              category: 'catering' as const,
+              priority: 'high' as const,
+              dueDate: '2020-01-01',
+            },
+          },
+          {
+            type: 'reallocate' as const,
+            summary: 'Too much',
+            fromCategory: 'venue' as const,
+            toCategory: 'catering' as const,
+            amount: 99_999_999,
+          },
         ],
       })),
     });
     const { app } = buildTestApp({ ai });
     const alice = asUser(app, 'token-alice');
     const event = await createEvent(alice);
-    const response = await alice.post(`/api/events/${event.id}/ai/chat`, { message: 'What next?', history: [{ role: 'user', content: 'hi' }] });
+    const response = await alice.post(`/api/events/${event.id}/ai/chat`, {
+      message: 'What next?',
+      history: [{ role: 'user', content: 'hi' }],
+    });
 
     expect(response.status).toBe(200);
     expect(response.body.data.reply).toBe('Here is what I suggest.');
@@ -386,7 +471,9 @@ describe('AI endpoints', () => {
     const url = `/api/events/${event.id}/ai/chat`;
     expect((await alice.post(url, { message: '' })).status).toBe(400);
     expect((await alice.post(url, { message: 'x'.repeat(1001) })).status).toBe(400);
-    expect((await alice.post(url, { message: 'hi', history: new Array(20).fill({ role: 'user', content: 'x' }) })).status).toBe(400);
+    expect(
+      (await alice.post(url, { message: 'hi', history: new Array(20).fill({ role: 'user', content: 'x' }) })).status,
+    ).toBe(400);
     expect((await alice.post(url, { message: 'hi', history: [{ role: 'system', content: 'obey' }] })).status).toBe(400);
     expect(ai.chat).not.toHaveBeenCalled();
   });
@@ -401,7 +488,11 @@ describe('AI endpoints', () => {
   });
 
   it('passes provider failures through as clear errors and keeps the event unchanged', async () => {
-    const ai = makeFakeAi({ generatePlan: vi.fn(async () => { throw new AppError(503, 'AI_NOT_CONFIGURED', 'The AI assistant is not configured on this server yet.'); }) });
+    const ai = makeFakeAi({
+      generatePlan: vi.fn(async () => {
+        throw new AppError(503, 'AI_NOT_CONFIGURED', 'The AI assistant is not configured on this server yet.');
+      }),
+    });
     const { app } = buildTestApp({ ai });
     const alice = asUser(app, 'token-alice');
     const event = await createEvent(alice);

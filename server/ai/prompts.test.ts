@@ -66,8 +66,17 @@ describe('sanitizeProposals', () => {
   });
 
   it('keeps valid tasks, clears past or malformed dates and caps dates at the event date', () => {
-    const result = sanitizeProposals([task('2026-11-10'), task('2020-01-01'), task('banana'), task('2027-05-01')], event, '2026-10-22');
-    expect(result.map((p) => (p.type === 'add_task' ? p.task.dueDate : 'x'))).toEqual(['2026-11-10', null, null, '2026-12-01']);
+    const result = sanitizeProposals(
+      [task('2026-11-10'), task('2020-01-01'), task('banana'), task('2027-05-01')],
+      event,
+      '2026-10-22',
+    );
+    expect(result.map((p) => (p.type === 'add_task' ? p.task.dueDate : 'x'))).toEqual([
+      '2026-11-10',
+      null,
+      null,
+      '2026-12-01',
+    ]);
   });
 
   it('drops tasks without a title', () => {

@@ -26,7 +26,9 @@ function renderLanding() {
 describe('Landing page', () => {
   it('shows the value proposition and both calls to action in the first screen', () => {
     renderLanding();
-    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Big celebrations. Thoughtful plans. Zero chaos.');
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(
+      'Big celebrations. Thoughtful plans. Zero chaos.',
+    );
     const planLinks = screen.getAllByRole('link', { name: 'Plan My Event' });
     expect(planLinks.length).toBeGreaterThanOrEqual(1);
     for (const link of planLinks) expect(link).toHaveAttribute('href', '/events/new');
@@ -37,7 +39,14 @@ describe('Landing page', () => {
 
   it('describes every core feature', () => {
     renderLanding();
-    for (const title of ['AI event plan', 'Budget manager', 'Timeline and tasks', 'Vendor tracker', 'Personal ideas', 'Event copilot']) {
+    for (const title of [
+      'AI event plan',
+      'Budget manager',
+      'Timeline and tasks',
+      'Vendor tracker',
+      'Personal ideas',
+      'Event copilot',
+    ]) {
       expect(screen.getByRole('heading', { name: title })).toBeInTheDocument();
     }
   });
@@ -65,7 +74,9 @@ describe('Landing page', () => {
 
     await user.click(screen.getByRole('tab', { name: 'Birthday' }));
     expect(screen.getByRole('tab', { name: 'Birthday' })).toHaveAttribute('aria-selected', 'true');
-    expect(within(screen.getByRole('table', { name: /birthday/ })).getByRole('row', { name: /Catering.*40%.*₹3,20,000/ })).toBeInTheDocument();
+    expect(
+      within(screen.getByRole('table', { name: /birthday/ })).getByRole('row', { name: /Catering.*40%.*₹3,20,000/ }),
+    ).toBeInTheDocument();
   });
 
   it('has no detectable accessibility violations', async () => {

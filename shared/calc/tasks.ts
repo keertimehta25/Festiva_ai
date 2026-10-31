@@ -47,7 +47,9 @@ export function sortChronologically<T extends Pick<TaskRecord, 'dueDate' | 'titl
 export function upcomingTasks(tasks: TaskRecord[], today: string, windowDays = 14): TaskRecord[] {
   const last = addDays(today, windowDays);
   return sortChronologically(
-    tasks.filter((task) => task.status !== 'completed' && task.dueDate !== null && task.dueDate >= today && task.dueDate <= last),
+    tasks.filter(
+      (task) => task.status !== 'completed' && task.dueDate !== null && task.dueDate >= today && task.dueDate <= last,
+    ),
   );
 }
 

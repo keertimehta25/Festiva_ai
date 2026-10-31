@@ -17,35 +17,70 @@ export function ProposalCard({ proposal, event }: { proposal: AiProposal; event:
   const apply = useWorkspaceMutation(event.id, async () => {
     if (proposal.type === 'add_task') {
       const { task } = proposal;
-      return api.createTask(event.id, { title: task.title, description: task.description, category: task.category, priority: task.priority, dueDate: task.dueDate });
+      return api.createTask(event.id, {
+        title: task.title,
+        description: task.description,
+        category: task.category,
+        priority: task.priority,
+        dueDate: task.dueDate,
+      });
     }
     // Recomputed from the current event so a stale suggestion cannot overwrite newer edits.
-    return api.updateEvent(event.id, { allocations: applyReallocation(event.allocations, { from: proposal.fromCategory, to: proposal.toCategory, amount: proposal.amount }) });
+    return api.updateEvent(event.id, {
+      allocations: applyReallocation(event.allocations, {
+        from: proposal.fromCategory,
+        to: proposal.toCategory,
+        amount: proposal.amount,
+      }),
+    });
   });
 
   function handleApply() {
     setError(null);
-    apply.mutate(undefined, { onSuccess: () => setStatus('applied'), onError: (e) => setError(e instanceof Error ? e.message : 'Could not apply this change') });
+    apply.mutate(undefined, {
+      onSuccess: () => setStatus('applied'),
+      onError: (e) => setError(e instanceof Error ? e.message : 'Could not apply this change'),
+    });
   }
 
   return (
     <div className="card" style={{ background: 'var(--surface-muted)' }}>
-      <p className="eyebrow" style={{ marginBottom: 4 }}>Suggested change: not applied yet</p>
-      <p style={{ marginBottom: 4 }}><strong>{proposal.summary}</strong></p>
+      <p className="eyebrow" style={{ marginBottom: 4 }}>
+        Suggested change: not applied yet
+      </p>
+      <p style={{ marginBottom: 4 }}>
+        <strong>{proposal.summary}</strong>
+      </p>
       <p className="small muted">
         {proposal.type === 'add_task'
           ? `Add task “${proposal.task.title}” (${TASK_CATEGORY_LABELS[proposal.task.category]}, due ${formatDate(proposal.task.dueDate)})`
           : `Move ${formatRupees(proposal.amount)} from ${BUDGET_CATEGORY_LABELS[proposal.fromCategory]} to ${BUDGET_CATEGORY_LABELS[proposal.toCategory]}`}
       </p>
-      {error && <p className="field-error" role="alert">{error}</p>}
+      {error && (
+        <p className="field-error" role="alert">
+          {error}
+        </p>
+      )}
       {status === 'pending' && (
         <div className="row-actions">
-          <button type="button" className="btn btn-primary btn-sm" onClick={handleApply} disabled={apply.isPending}>{apply.isPending ? 'Applying…' : 'Apply this change'}</button>
-          <button type="button" className="btn btn-ghost btn-sm" onClick={() => setStatus('dismissed')}>Dismiss</button>
+          <button type="button" className="btn btn-primary btn-sm" onClick={handleApply} disabled={apply.isPending}>
+            {apply.isPending ? 'Applying…' : 'Apply this change'}
+          </button>
+          <button type="button" className="btn btn-ghost btn-sm" onClick={() => setStatus('dismissed')}>
+            Dismiss
+          </button>
         </div>
       )}
-      {status === 'applied' && <span className="badge badge-success" role="status">Applied</span>}
-      {status === 'dismissed' && <span className="badge badge-neutral" role="status">Dismissed</span>}
+      {status === 'applied' && (
+        <span className="badge badge-success" role="status">
+          Applied
+        </span>
+      )}
+      {status === 'dismissed' && (
+        <span className="badge badge-neutral" role="status">
+          Dismissed
+        </span>
+      )}
     </div>
   );
 }

@@ -38,7 +38,10 @@ export function createAiRouter(deps: RouteDeps): Router {
     try {
       const notes = analyzeEventInput(event);
       const plan = normalizePlan(await ai.generatePlan({ workspace, notes }), event.totalBudget, config.gemini.model);
-      const updated = await repo.events.update(currentUser(res).id, event.id, { plan, planGeneratedAt: new Date().toISOString() });
+      const updated = await repo.events.update(currentUser(res).id, event.id, {
+        plan,
+        planGeneratedAt: new Date().toISOString(),
+      });
       res.json({ data: { event: updated, notes } });
     } finally {
       plansInFlight.delete(event.id);
@@ -73,7 +76,9 @@ export function createAiRouter(deps: RouteDeps): Router {
   router.post('/plan/apply-budget', async (req, res) => {
     const event = await requireEvent(deps, res, eventIdParam(req));
     if (!event.plan) throw new AppError(409, 'NO_PLAN', 'Generate a plan first');
-    const updated = await repo.events.update(currentUser(res).id, event.id, { allocations: event.plan.allocationAmounts });
+    const updated = await repo.events.update(currentUser(res).id, event.id, {
+      allocations: event.plan.allocationAmounts,
+    });
     res.json({ data: { event: updated } });
   });
 

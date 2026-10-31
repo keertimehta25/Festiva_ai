@@ -10,4 +10,4 @@ export const isAuthConfigured = Boolean(url && anonKey);
  * The anon key is public by design; all data access goes through the API, and the
  * database has Row Level Security enabled with no policies, so this key cannot read data.
  */
-export const supabase: SupabaseClient | null = isAuthConfigured ? createClient(url as string, anonKey as string) : null;
+export const supabase: SupabaseClient | null = url && anonKey ? createClient(url, anonKey) : null;

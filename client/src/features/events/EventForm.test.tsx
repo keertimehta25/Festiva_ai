@@ -76,14 +76,26 @@ describe('EventForm', () => {
     await user.click(screen.getByRole('button', { name: 'Create event' }));
 
     await waitFor(() => expect(onSubmit).toHaveBeenCalledTimes(1));
-    expect(onSubmit).toHaveBeenCalledWith(expect.objectContaining({
-      name: 'Riya’s 10th', eventType: 'birthday', totalBudget: 150_000, guestCount: 40, durationHours: 4, foodPreference: 'mixed', priorities: ['sustainability'], eventDate: null, currency: 'INR',
-    }));
+    expect(onSubmit).toHaveBeenCalledWith(
+      expect.objectContaining({
+        name: 'Riya’s 10th',
+        eventType: 'birthday',
+        totalBudget: 150_000,
+        guestCount: 40,
+        durationHours: 4,
+        foodPreference: 'mixed',
+        priorities: ['sustainability'],
+        eventDate: null,
+        currency: 'INR',
+      }),
+    );
   });
 
   it('shows server-side field errors when the API rejects the input', async () => {
     const { ApiError } = await import('../../lib/api');
-    const onSubmit = vi.fn(async () => { throw new ApiError(400, 'VALIDATION_ERROR', 'Some fields need attention', { name: ['Name already used'] }); });
+    const onSubmit = vi.fn(async () => {
+      throw new ApiError(400, 'VALIDATION_ERROR', 'Some fields need attention', { name: ['Name already used'] });
+    });
     const user = userEvent.setup();
     renderWithProviders(<EventForm onSubmit={onSubmit} submitLabel="Create event" busy={false} />);
     await user.type(screen.getByLabelText('Event name'), 'Party');

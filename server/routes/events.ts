@@ -13,7 +13,11 @@ import { requireEvent, todayFor, type RouteDeps } from './context';
 
 function assertAllocationsFit(allocations: Allocations, totalBudget: number): void {
   if (sumAllocations(allocations) > totalBudget) {
-    throw new AppError(422, 'ALLOCATION_EXCEEDS_BUDGET', 'Category allocations cannot add up to more than the total budget');
+    throw new AppError(
+      422,
+      'ALLOCATION_EXCEEDS_BUDGET',
+      'Category allocations cannot add up to more than the total budget',
+    );
   }
 }
 
@@ -39,7 +43,11 @@ export function createEventsRouter(deps: RouteDeps): Router {
     const input = parseWith(eventCreateSchema(today), req.body);
 
     if ((await repo.events.list(user.id)).length >= LIMITS.maxEventsPerUser) {
-      throw new AppError(409, 'LIMIT_REACHED', `You can keep up to ${LIMITS.maxEventsPerUser} events. Delete one to add another.`);
+      throw new AppError(
+        409,
+        'LIMIT_REACHED',
+        `You can keep up to ${LIMITS.maxEventsPerUser} events. Delete one to add another.`,
+      );
     }
 
     const event = await repo.events.create(user.id, {
@@ -47,7 +55,11 @@ export function createEventsRouter(deps: RouteDeps): Router {
       allocations: defaultAllocations(input.eventType, input.totalBudget),
       isSample: false,
     });
-    const tasks = await repo.tasks.createMany(user.id, event.id, generateBaseTasks(input.eventType, input.eventDate, today));
+    const tasks = await repo.tasks.createMany(
+      user.id,
+      event.id,
+      generateBaseTasks(input.eventType, input.eventDate, today),
+    );
     res.status(201).json({ data: { event, tasks, notes: analyzeEventInput(input) } });
   });
 
@@ -62,7 +74,11 @@ export function createEventsRouter(deps: RouteDeps): Router {
       return;
     }
     if (existing.length >= LIMITS.maxEventsPerUser) {
-      throw new AppError(409, 'LIMIT_REACHED', `You can keep up to ${LIMITS.maxEventsPerUser} events. Delete one to add the sample.`);
+      throw new AppError(
+        409,
+        'LIMIT_REACHED',
+        `You can keep up to ${LIMITS.maxEventsPerUser} events. Delete one to add the sample.`,
+      );
     }
 
     const sample = buildSampleWorkspace(today);
@@ -76,7 +92,10 @@ export function createEventsRouter(deps: RouteDeps): Router {
     await repo.expenses.createMany(
       user.id,
       event.id,
-      sample.expenses.map(({ vendorIndex, ...expense }) => ({ ...expense, vendorId: vendorIndex === null ? null : (vendors[vendorIndex]?.id ?? null) })),
+      sample.expenses.map(({ vendorIndex, ...expense }) => ({
+        ...expense,
+        vendorId: vendorIndex === null ? null : (vendors[vendorIndex]?.id ?? null),
+      })),
     );
     res.status(201).json({ data: { event, created: true } });
   });
@@ -101,7 +120,9 @@ export function createEventsRouter(deps: RouteDeps): Router {
     // Changing the total without supplying a split keeps the existing proportions.
     const allocations =
       requested ??
-      (totalBudget !== event.totalBudget ? scaleAllocations(event.allocations, fields.eventType ?? event.eventType, totalBudget) : undefined);
+      (totalBudget !== event.totalBudget
+        ? scaleAllocations(event.allocations, fields.eventType ?? event.eventType, totalBudget)
+        : undefined);
     if (allocations) assertAllocationsFit(allocations, totalBudget);
 
     const updated = await repo.events.update(user.id, event.id, { ...fields, ...(allocations ? { allocations } : {}) });

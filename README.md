@@ -6,6 +6,7 @@ A GenAI-powered planning assistant for weddings, birthdays, anniversaries, commu
 
 - Live app: _add after deployment_ (see [Deployment guide](docs/DEPLOYMENT.md))
 - Demo video: _add after recording_ (script in [docs/SUBMISSION.md](docs/SUBMISSION.md))
+- Architecture and conventions: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) · [CONTRIBUTING.md](CONTRIBUTING.md) · [SECURITY.md](SECURITY.md)
 
 > **Verification status, stated plainly.** Everything below marked "tested" was run in the development environment: 212 unit/integration tests, 3 browser tests, lint, type check, production build and `npm audit`. The app has **not** yet been run against a real Supabase project or the real Gemini API (those need your accounts and keys), and it is **not yet deployed**. The Gemini request body uses the documented SDK field names (`responseMimeType`, `responseJsonSchema`) but could not be exercised here, so confirm it with `scripts/verify-deployment.mjs` first. [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) covers exactly how to deploy and confirm.
 
@@ -22,15 +23,15 @@ India-first: INR with Indian digit grouping (₹12,34,567), Indian date format, 
 
 ## Features
 
-| Area | What works |
-|---|---|
-| Landing and onboarding | Hero, "Plan My Event" / "Explore Features", feature cards, interactive budget preview, privacy footer, short event form with sensible defaults |
-| AI event plan | Concept and theme, budget split, itemised estimates, timeline, vendor checklist with questions to ask, guest checklist, decor / food / activity / entertainment ideas, day-of schedule, risks with contingencies, cost-saving tips, personal recommendations, clarifying questions |
-| Budget manager | Planned vs estimated vs actual per category, remaining, % consumed, add / edit / delete expenses, vendor-linked expenses, donut chart with a data table alternative, overspending warnings, reallocation suggestions, AI cost-saving ideas |
-| Tasks | Generated from event type and date, priority, status, category, notes, overdue flags, upcoming deadlines, filters, list and chronological timeline views, completion % |
-| Vendors | Ten categories, quote, advance, payment and booking status, follow-up dates (with due flags), linked tasks and expenses, totals and pending payments. User-entered records only |
-| Copilot | Uses the saved event, budget, tasks and vendor names; quick prompts; proposes tasks or budget moves that apply **only after you press Apply** |
-| Workspace | Dashboard of event cards, sample workspace on demand, edit and delete with confirmation, loading / empty / error states, all data persisted per user |
+| Area                   | What works                                                                                                                                                                                                                                                                         |
+| ---------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Landing and onboarding | Hero, "Plan My Event" / "Explore Features", feature cards, interactive budget preview, privacy footer, short event form with sensible defaults                                                                                                                                     |
+| AI event plan          | Concept and theme, budget split, itemised estimates, timeline, vendor checklist with questions to ask, guest checklist, decor / food / activity / entertainment ideas, day-of schedule, risks with contingencies, cost-saving tips, personal recommendations, clarifying questions |
+| Budget manager         | Planned vs estimated vs actual per category, remaining, % consumed, add / edit / delete expenses, vendor-linked expenses, donut chart with a data table alternative, overspending warnings, reallocation suggestions, AI cost-saving ideas                                         |
+| Tasks                  | Generated from event type and date, priority, status, category, notes, overdue flags, upcoming deadlines, filters, list and chronological timeline views, completion %                                                                                                             |
+| Vendors                | Ten categories, quote, advance, payment and booking status, follow-up dates (with due flags), linked tasks and expenses, totals and pending payments. User-entered records only                                                                                                    |
+| Copilot                | Uses the saved event, budget, tasks and vendor names; quick prompts; proposes tasks or budget moves that apply **only after you press Apply**                                                                                                                                      |
+| Workspace              | Dashboard of event cards, sample workspace on demand, edit and delete with confirmation, loading / empty / error states, all data persisted per user                                                                                                                               |
 
 ## Architecture
 
@@ -48,15 +49,15 @@ flowchart LR
   A --- C
 ```
 
-| Directory | Purpose |
-|---|---|
-| `client/` | React 19 + Vite + TypeScript UI. `pages/`, `features/<area>/`, `components/ui/` (design system), `lib/api.ts` |
-| `server/` | Express API: `routes/`, `middleware/`, `data/` (repository interface, Supabase and in-memory implementations), `ai/` (the only code that talks to a model) |
-| `shared/` | Code used by both sides: zod schemas, constants, **all budget / task / vendor maths**, task templates, plan normaliser |
-| `supabase/schema.sql` | Tables, constraints, indexes, RLS |
-| `e2e/` | Playwright browser tests (real Express app, in-memory data, canned AI) |
-| `scripts/` | `check-contrast.mjs` (WCAG colour pairs), `verify-deployment.mjs` |
-| `docs/` | Deployment guide, API reference, submission text |
+| Directory             | Purpose                                                                                                                                                    |
+| --------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `client/`             | React 19 + Vite + TypeScript UI. `pages/`, `features/<area>/`, `components/ui/` (design system), `lib/api.ts`                                              |
+| `server/`             | Express API: `routes/`, `middleware/`, `data/` (repository interface, Supabase and in-memory implementations), `ai/` (the only code that talks to a model) |
+| `shared/`             | Code used by both sides: zod schemas, constants, **all budget / task / vendor maths**, task templates, plan normaliser                                     |
+| `supabase/schema.sql` | Tables, constraints, indexes, RLS                                                                                                                          |
+| `e2e/`                | Playwright browser tests (real Express app, in-memory data, canned AI)                                                                                     |
+| `scripts/`            | `check-contrast.mjs` (WCAG colour pairs), `verify-deployment.mjs`                                                                                          |
+| `docs/`               | Deployment guide, API reference, submission text                                                                                                           |
 
 Design choices a beginner can follow: one language everywhere, one source of truth for validation (`shared/schemas.ts`) used by form, API and AI-output checks, and a repository interface so the database can be swapped or faked.
 
@@ -90,12 +91,12 @@ Target WCAG 2.2 AA. Semantic landmarks and heading order, skip link, labelled co
 
 ## Testing
 
-| Layer | Tool | Result when last run |
-|---|---|---|
+| Layer                 | Tool                                                 | Result when last run      |
+| --------------------- | ---------------------------------------------------- | ------------------------- |
 | Unit, API, components | Vitest, React Testing Library, Supertest, vitest-axe | **212 passed** (16 files) |
-| Browser journey + axe | Playwright | **3 passed** |
-| Types / lint | `tsc`, ESLint (+ jsx-a11y) | clean |
-| Dependencies | `npm audit` | 0 vulnerabilities |
+| Browser journey + axe | Playwright                                           | **3 passed**              |
+| Types / lint          | `tsc`, ESLint (+ jsx-a11y)                           | clean                     |
+| Dependencies          | `npm audit`                                          | 0 vulnerabilities         |
 
 Covers: event form validation (invalid dates, guest counts, budgets), budget totals / remaining / overspend, expense create and update, task progress, vendor payments, AI schema validation, missing / invalid AI config, provider failures and timeouts, API validation, authentication and cross-user access, main navigation and creation flow, and the full browser journey (create → AI plan → expense updates balance → task → vendor → copilot proposal needs Apply → data survives reload). External services are mocked in tests; the production AI client is real and untouched by the mocks. The browser tests use a canned AI answer, so **the live Gemini call itself is verified only by `verify-deployment.mjs` with your key**.
 
@@ -117,14 +118,14 @@ npm run dev:server       # API on http://localhost:8787
 npm run dev:client       # app on http://localhost:5173 (proxies /api to the API)
 ```
 
-| Variable | Where | Purpose |
-|---|---|---|
-| `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY` | API | Database and token verification. **Secret.** |
-| `GEMINI_API_KEY`, `GEMINI_MODEL`, `AI_TIMEOUT_MS` | API | AI provider. Key is **secret** |
-| `CORS_ORIGINS` | API | Exact web origin(s), required in production |
-| `PORT`, `TRUST_PROXY`, `APP_TIME_ZONE` | API | Optional; defaults 8787 / 1 hop in production / Asia/Kolkata |
-| `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY` | Web | Sign-in only (public values) |
-| `VITE_API_URL` | Web | API origin in production; empty locally |
+| Variable                                          | Where | Purpose                                                      |
+| ------------------------------------------------- | ----- | ------------------------------------------------------------ |
+| `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`       | API   | Database and token verification. **Secret.**                 |
+| `GEMINI_API_KEY`, `GEMINI_MODEL`, `AI_TIMEOUT_MS` | API   | AI provider. Key is **secret**                               |
+| `CORS_ORIGINS`                                    | API   | Exact web origin(s), required in production                  |
+| `PORT`, `TRUST_PROXY`, `APP_TIME_ZONE`            | API   | Optional; defaults 8787 / 1 hop in production / Asia/Kolkata |
+| `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`     | Web   | Sign-in only (public values)                                 |
+| `VITE_API_URL`                                    | Web   | API origin in production; empty locally                      |
 
 Supabase also needs Authentication → Providers → Email enabled. For quick demos you may turn off "Confirm email"; otherwise new users must confirm first.
 

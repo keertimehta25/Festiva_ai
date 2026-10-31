@@ -9,10 +9,10 @@ interface AuthState {
   /** True until the stored session (if any) has been read. */
   loading: boolean;
   configured: boolean;
-  signIn(email: string, password: string): Promise<string | null>;
+  signIn: (email: string, password: string) => Promise<string | null>;
   /** Returns an error message, or null. `needsConfirmation` is true when the user must confirm their email first. */
-  signUp(email: string, password: string): Promise<{ error: string | null; needsConfirmation: boolean }>;
-  signOut(): Promise<void>;
+  signUp: (email: string, password: string) => Promise<{ error: string | null; needsConfirmation: boolean }>;
+  signOut: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthState | null>(null);

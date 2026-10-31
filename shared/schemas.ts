@@ -26,9 +26,12 @@ export function stripControlChars(value: string): string {
   return result;
 }
 
-const text = (max: number) => z.string().max(max, `Keep this under ${max} characters`).transform((v) => stripControlChars(v).trim());
-const requiredText = (max: number, label: string) =>
-  text(max).refine((v) => v.length > 0, `${label} is required`);
+const text = (max: number) =>
+  z
+    .string()
+    .max(max, `Keep this under ${max} characters`)
+    .transform((v) => stripControlChars(v).trim());
+const requiredText = (max: number, label: string) => text(max).refine((v) => v.length > 0, `${label} is required`);
 
 const money = z
   .number('Enter a valid amount')
@@ -39,6 +42,16 @@ const money = z
 const isoDate = z.string().refine(isValidIsoDate, 'Enter a valid date');
 
 export const idSchema = z.uuid('Invalid id');
+
+const NO_FIELDS_MESSAGE = 'Provide at least one field to update';
+
+/** Turns a field map into a partial-update schema that rejects an empty patch. */
+function partialUpdate<Shape extends z.ZodRawShape>(shape: Shape) {
+  return z
+    .object(shape)
+    .partial()
+    .refine((patch) => Object.keys(patch).length > 0, NO_FIELDS_MESSAGE);
+}
 
 // ---------------------------------------------------------------- events
 
@@ -98,15 +111,14 @@ export const eventBaseSchema = z.object({
  */
 export function eventCreateSchema(today: string) {
   return eventBaseSchema.extend({
-    eventDate: eventCore.eventDate.refine((date) => date === null || date >= today, 'Choose today or a future date').default(null),
+    eventDate: eventCore.eventDate
+      .refine((date) => date === null || date >= today, 'Choose today or a future date')
+      .default(null),
   });
 }
 
 /** Updating an event: every field optional; allocations may be replaced explicitly. */
-export const eventUpdateSchema = z
-  .object({ ...eventCore, allocations: allocationsSchema })
-  .partial()
-  .refine((patch) => Object.keys(patch).length > 0, 'Provide at least one field to update');
+export const eventUpdateSchema = partialUpdate({ ...eventCore, allocations: allocationsSchema });
 
 export type EventInput = z.infer<typeof eventBaseSchema>;
 export type EventUpdate = z.infer<typeof eventUpdateSchema>;
@@ -136,21 +148,26 @@ export const taskInputSchema = z.object({
 });
 export type TaskInput = z.infer<typeof taskInputSchema>;
 
-export const taskUpdateSchema = z
-  .object(taskCore)
-  .partial()
-  .refine((patch) => Object.keys(patch).length > 0, 'Provide at least one field to update');
+export const taskUpdateSchema = partialUpdate(taskCore);
 
 // -------------------------------------------------------------- expenses
 
+const expenseCore = {
+  title: requiredText(120, 'Expense title'),
+  category: z.enum(BUDGET_CATEGORIES, 'Choose a category'),
+  estimatedAmount: money,
+  actualAmount: money,
+  vendorId: idSchema.nullable(),
+  notes: text(300),
+};
+
 export const expenseInputSchema = z
   .object({
-    title: requiredText(120, 'Expense title'),
-    category: z.enum(BUDGET_CATEGORIES, 'Choose a category'),
-    estimatedAmount: money.default(0),
-    actualAmount: money.default(0),
-    vendorId: idSchema.nullable().default(null),
-    notes: text(300).default(''),
+    ...expenseCore,
+    estimatedAmount: expenseCore.estimatedAmount.default(0),
+    actualAmount: expenseCore.actualAmount.default(0),
+    vendorId: expenseCore.vendorId.default(null),
+    notes: expenseCore.notes.default(''),
   })
   .refine((expense) => expense.estimatedAmount > 0 || expense.actualAmount > 0, {
     path: ['actualAmount'],
@@ -158,31 +175,32 @@ export const expenseInputSchema = z
   });
 export type ExpenseInput = z.infer<typeof expenseInputSchema>;
 
-export const expenseUpdateSchema = z
-  .object({
-    title: requiredText(120, 'Expense title'),
-    category: z.enum(BUDGET_CATEGORIES),
-    estimatedAmount: money,
-    actualAmount: money,
-    vendorId: idSchema.nullable(),
-    notes: text(300),
-  })
-  .partial()
-  .refine((patch) => Object.keys(patch).length > 0, 'Provide at least one field to update');
+export const expenseUpdateSchema = partialUpdate(expenseCore);
 
 // --------------------------------------------------------------- vendors
 
+const vendorCore = {
+  name: requiredText(120, 'Vendor name'),
+  category: z.enum(VENDOR_CATEGORIES, 'Choose a category'),
+  contact: text(200),
+  quotedPrice: money,
+  advanceAmount: money,
+  paymentStatus: z.enum(PAYMENT_STATUSES),
+  bookingStatus: z.enum(VENDOR_STATUSES),
+  notes: text(500),
+  followUpDate: isoDate.nullable(),
+};
+
 export const vendorInputSchema = z
   .object({
-    name: requiredText(120, 'Vendor name'),
-    category: z.enum(VENDOR_CATEGORIES, 'Choose a category'),
-    contact: text(200).default(''),
-    quotedPrice: money.default(0),
-    advanceAmount: money.default(0),
-    paymentStatus: z.enum(PAYMENT_STATUSES).default('unpaid'),
-    bookingStatus: z.enum(VENDOR_STATUSES).default('shortlisted'),
-    notes: text(500).default(''),
-    followUpDate: isoDate.nullable().default(null),
+    ...vendorCore,
+    contact: vendorCore.contact.default(''),
+    quotedPrice: vendorCore.quotedPrice.default(0),
+    advanceAmount: vendorCore.advanceAmount.default(0),
+    paymentStatus: vendorCore.paymentStatus.default('unpaid'),
+    bookingStatus: vendorCore.bookingStatus.default('shortlisted'),
+    notes: vendorCore.notes.default(''),
+    followUpDate: vendorCore.followUpDate.default(null),
   })
   .refine((vendor) => vendor.advanceAmount <= vendor.quotedPrice, {
     path: ['advanceAmount'],
@@ -190,20 +208,7 @@ export const vendorInputSchema = z
   });
 export type VendorInput = z.infer<typeof vendorInputSchema>;
 
-export const vendorUpdateSchema = z
-  .object({
-    name: requiredText(120, 'Vendor name'),
-    category: z.enum(VENDOR_CATEGORIES),
-    contact: text(200),
-    quotedPrice: money,
-    advanceAmount: money,
-    paymentStatus: z.enum(PAYMENT_STATUSES),
-    bookingStatus: z.enum(VENDOR_STATUSES),
-    notes: text(500),
-    followUpDate: isoDate.nullable(),
-  })
-  .partial()
-  .refine((patch) => Object.keys(patch).length > 0, 'Provide at least one field to update');
+export const vendorUpdateSchema = partialUpdate(vendorCore);
 
 // --------------------------------------------------------------------- AI
 
@@ -265,9 +270,7 @@ export const aiPlanSchema = z.object({
     activities: aiList(6, 200),
     entertainment: aiList(6, 200),
   }),
-  daySchedule: z
-    .array(z.object({ time: aiText(20), activity: aiText(200), notes: aiText(200) }))
-    .max(20),
+  daySchedule: z.array(z.object({ time: aiText(20), activity: aiText(200), notes: aiText(200) })).max(20),
   risks: z.array(z.object({ risk: aiText(200), contingency: aiText(300) })).max(8),
   costSavingTips: aiList(8, 240),
   personalRecommendations: aiList(8, 300),

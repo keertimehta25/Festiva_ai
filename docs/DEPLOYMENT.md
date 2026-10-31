@@ -2,12 +2,12 @@
 
 Architecture: **Supabase** (sign-in + database) → **Render** (Express API) → **Vercel** (React site), with **Gemini** called only from the API. All three hosts have a free tier. I checked Render, Vercel and Supabase free-tier notes on 22 Oct 2026; plans change, so skim each pricing page before you start.
 
-| Service | Free-tier things to know |
-|---|---|
-| Render | Free web service sleeps after ~15 min idle; first request after sleep takes ~1 minute. 750 instance hours / month |
-| Vercel Hobby | For personal, non-commercial use (fine for a competition entry) |
-| Supabase | Free project pauses after ~7 days of inactivity (resume it in the dashboard); 500 MB database |
-| Gemini API | Free tier has per-minute and per-day limits; see Google's rate-limit page |
+| Service      | Free-tier things to know                                                                                          |
+| ------------ | ----------------------------------------------------------------------------------------------------------------- |
+| Render       | Free web service sleeps after ~15 min idle; first request after sleep takes ~1 minute. 750 instance hours / month |
+| Vercel Hobby | For personal, non-commercial use (fine for a competition entry)                                                   |
+| Supabase     | Free project pauses after ~7 days of inactivity (resume it in the dashboard); 500 MB database                     |
+| Gemini API   | Free tier has per-minute and per-day limits; see Google's rate-limit page                                         |
 
 You will do these steps in your own accounts. Nothing below has been run for you, so the live URLs do not exist yet.
 
@@ -32,7 +32,7 @@ Check `git status` shows no `.env` file before you push (it is git-ignored).
    - Project URL → `SUPABASE_URL` and `VITE_SUPABASE_URL`
    - `anon` / public key → `VITE_SUPABASE_ANON_KEY`
    - `service_role` key → `SUPABASE_SERVICE_ROLE_KEY` (**secret**: only ever in Render)
-   If your dashboard shows new-style keys ("publishable" / "secret"), use the publishable key as the anon key and the secret key as the service-role key.
+     If your dashboard shows new-style keys ("publishable" / "secret"), use the publishable key as the anon key and the secret key as the service-role key.
 5. After Vercel gives you a URL (step 4), set **Authentication → URL Configuration → Site URL** to it.
 
 ## 3. Gemini key
@@ -44,26 +44,26 @@ Google AI Studio → **Get API key** (aistudio.google.com/apikey) → create a k
 1. render.com → **New → Blueprint** → connect your GitHub repo. It reads `render.yaml`. (Or **New → Web Service** and enter the values below by hand.)
 2. Settings used:
 
-| Setting | Value |
-|---|---|
-| Root directory | _(leave empty: repo root)_ |
-| Runtime | Node (`NODE_VERSION` = 22) |
-| Build command | `npm ci --include=dev && npm run build:server` |
-| Start command | `npm start` |
-| Health check path | `/api/health` |
-| Plan | Free |
+| Setting           | Value                                          |
+| ----------------- | ---------------------------------------------- |
+| Root directory    | _(leave empty: repo root)_                     |
+| Runtime           | Node (`NODE_VERSION` = 22)                     |
+| Build command     | `npm ci --include=dev && npm run build:server` |
+| Start command     | `npm start`                                    |
+| Health check path | `/api/health`                                  |
+| Plan              | Free                                           |
 
 3. Environment variables (Environment tab):
 
-| Key | Value |
-|---|---|
-| `NODE_ENV` | `production` |
-| `SUPABASE_URL` | from step 2 |
-| `SUPABASE_SERVICE_ROLE_KEY` | from step 2 (secret) |
-| `GEMINI_API_KEY` | from step 3 (secret) |
-| `GEMINI_MODEL` | `gemini-3.6-flash` |
-| `CORS_ORIGINS` | your exact Vercel URL, no trailing slash. Add it after step 5, then redeploy |
-| `GEMINI_THINKING_LEVEL` | optional: `low` if plans feel slow or get cut off |
+| Key                         | Value                                                                        |
+| --------------------------- | ---------------------------------------------------------------------------- |
+| `NODE_ENV`                  | `production`                                                                 |
+| `SUPABASE_URL`              | from step 2                                                                  |
+| `SUPABASE_SERVICE_ROLE_KEY` | from step 2 (secret)                                                         |
+| `GEMINI_API_KEY`            | from step 3 (secret)                                                         |
+| `GEMINI_MODEL`              | `gemini-3.6-flash`                                                           |
+| `CORS_ORIGINS`              | your exact Vercel URL, no trailing slash. Add it after step 5, then redeploy |
+| `GEMINI_THINKING_LEVEL`     | optional: `low` if plans feel slow or get cut off                            |
 
 4. Deploy. Your API URL looks like `https://festiva-ai-api.onrender.com`. Open `<url>/api/health`; you should see `{"data":{"status":"ok","aiConfigured":true}}`.
 
@@ -74,20 +74,20 @@ The server refuses to start in production without `CORS_ORIGINS`, so a missing v
 1. vercel.com → **Add New → Project** → import the repo.
 2. Settings (also in `vercel.json`):
 
-| Setting | Value |
-|---|---|
-| Framework preset | Other |
-| Root directory | _(repo root)_ |
-| Install command | `npm ci` |
-| Build command | `npm run build:client` |
-| Output directory | `dist/client` |
+| Setting          | Value                  |
+| ---------------- | ---------------------- |
+| Framework preset | Other                  |
+| Root directory   | _(repo root)_          |
+| Install command  | `npm ci`               |
+| Build command    | `npm run build:client` |
+| Output directory | `dist/client`          |
 
 3. Environment variables (Production):
 
-| Key | Value |
-|---|---|
-| `VITE_API_URL` | your Render URL, no trailing slash |
-| `VITE_SUPABASE_URL` | from step 2 |
+| Key                      | Value                              |
+| ------------------------ | ---------------------------------- |
+| `VITE_API_URL`           | your Render URL, no trailing slash |
+| `VITE_SUPABASE_URL`      | from step 2                        |
 | `VITE_SUPABASE_ANON_KEY` | anon / publishable key from step 2 |
 
 4. Deploy. `vercel.json` already contains the single-page-app rewrite (so refreshing `/events/...` works), cache headers and security headers. Its Content-Security-Policy allows API calls to `https://*.onrender.com` and `https://*.supabase.co`; if you use a custom API domain, add it to `connect-src`.
@@ -117,18 +117,18 @@ Push to `main`; Vercel and Render redeploy automatically. Database changes: edit
 
 ## Troubleshooting
 
-| Symptom | Likely cause |
-|---|---|
-| Site loads, "Could not reach the server" | `VITE_API_URL` wrong, or Render is waking up (wait ~1 min) |
-| Browser console shows a CORS error | `CORS_ORIGINS` does not exactly equal the site URL (scheme, no trailing slash) |
-| Sign-up says check your email but no email | Turn off "Confirm email" or configure SMTP in Supabase |
-| `401` after signing in | `SUPABASE_URL` / service-role key on Render belong to a different project than the site's |
-| AI answers `AI_NOT_CONFIGURED` (503) | `GEMINI_API_KEY` not set on Render |
-| `AI_AUTH_FAILED` | Key invalid or restricted |
-| `AI_BAD_REQUEST` | `GEMINI_MODEL` is retired or misspelled; or the API changed the request fields: check Render logs for the provider message |
-| `AI_TRUNCATED` | Set `GEMINI_THINKING_LEVEL=low` |
-| `AI_RATE_LIMITED` | Free-tier quota; wait or use a billed key |
-| Database errors (502 `DATABASE_ERROR`) | Schema not run, or Supabase project is paused |
+| Symptom                                    | Likely cause                                                                                                               |
+| ------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------- |
+| Site loads, "Could not reach the server"   | `VITE_API_URL` wrong, or Render is waking up (wait ~1 min)                                                                 |
+| Browser console shows a CORS error         | `CORS_ORIGINS` does not exactly equal the site URL (scheme, no trailing slash)                                             |
+| Sign-up says check your email but no email | Turn off "Confirm email" or configure SMTP in Supabase                                                                     |
+| `401` after signing in                     | `SUPABASE_URL` / service-role key on Render belong to a different project than the site's                                  |
+| AI answers `AI_NOT_CONFIGURED` (503)       | `GEMINI_API_KEY` not set on Render                                                                                         |
+| `AI_AUTH_FAILED`                           | Key invalid or restricted                                                                                                  |
+| `AI_BAD_REQUEST`                           | `GEMINI_MODEL` is retired or misspelled; or the API changed the request fields: check Render logs for the provider message |
+| `AI_TRUNCATED`                             | Set `GEMINI_THINKING_LEVEL=low`                                                                                            |
+| `AI_RATE_LIMITED`                          | Free-tier quota; wait or use a billed key                                                                                  |
+| Database errors (502 `DATABASE_ERROR`)     | Schema not run, or Supabase project is paused                                                                              |
 
 ## Record the repository size before submitting
 

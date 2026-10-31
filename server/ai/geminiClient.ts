@@ -36,8 +36,14 @@ function withoutBounds(node: unknown): unknown {
   if (Array.isArray(node)) return node.map(withoutBounds);
   if (node === null || typeof node !== 'object') return node;
   const entries = Object.entries(node as JsonSchema)
-    .filter(([key, value]) => !(BOUND_KEYS as readonly string[]).includes(key) || (typeof value === 'object' && value !== null))
-    .map(([key, value]) => [key, key === 'properties' ? mapValues(value as JsonSchema, withoutBounds) : withoutBounds(value)]);
+    .filter(
+      ([key, value]) =>
+        !(BOUND_KEYS as readonly string[]).includes(key) || (typeof value === 'object' && value !== null),
+    )
+    .map(([key, value]) => [
+      key,
+      key === 'properties' ? mapValues(value as JsonSchema, withoutBounds) : withoutBounds(value),
+    ]);
   return Object.fromEntries(entries);
 }
 
@@ -55,7 +61,9 @@ export function clampToSchema(value: unknown, schema: JsonSchema): unknown {
     return value.slice(0, max).map((item) => clampToSchema(item, items));
   }
   if (typeof value === 'string') {
-    return typeof schema.maxLength === 'number' && value.length > schema.maxLength ? value.slice(0, schema.maxLength).trimEnd() : value;
+    return typeof schema.maxLength === 'number' && value.length > schema.maxLength
+      ? value.slice(0, schema.maxLength).trimEnd()
+      : value;
   }
   if (typeof value === 'number') {
     const min = typeof schema.minimum === 'number' ? schema.minimum : value;
@@ -65,7 +73,10 @@ export function clampToSchema(value: unknown, schema: JsonSchema): unknown {
   if (value !== null && typeof value === 'object') {
     const properties = (schema.properties ?? {}) as Record<string, JsonSchema>;
     return Object.fromEntries(
-      Object.entries(value as JsonSchema).map(([key, child]) => [key, properties[key] ? clampToSchema(child, properties[key]) : child]),
+      Object.entries(value as JsonSchema).map(([key, child]) => [
+        key,
+        properties[key] ? clampToSchema(child, properties[key]) : child,
+      ]),
     );
   }
   return value;
@@ -92,9 +103,20 @@ function providerSchemas(schema: z.ZodType): ProviderSchemas {
 }
 
 function httpError(status: number): AppError {
-  if (status === 429) return new AppError(429, 'AI_RATE_LIMITED', 'The AI service is busy right now. Please try again in a minute.');
-  if (status === 401 || status === 403) return new AppError(502, 'AI_AUTH_FAILED', 'The AI service rejected the server’s credentials. The site owner needs to check the AI key.');
-  if (status === 400 || status === 404) return new AppError(502, 'AI_BAD_REQUEST', 'The AI service could not process this request. The site owner may need to check the model setting.');
+  if (status === 429)
+    return new AppError(429, 'AI_RATE_LIMITED', 'The AI service is busy right now. Please try again in a minute.');
+  if (status === 401 || status === 403)
+    return new AppError(
+      502,
+      'AI_AUTH_FAILED',
+      'The AI service rejected the server’s credentials. The site owner needs to check the AI key.',
+    );
+  if (status === 400 || status === 404)
+    return new AppError(
+      502,
+      'AI_BAD_REQUEST',
+      'The AI service could not process this request. The site owner may need to check the model setting.',
+    );
   return new AppError(502, 'AI_UNAVAILABLE', 'The AI service is temporarily unavailable. Please try again shortly.');
 }
 
@@ -105,7 +127,11 @@ function extractText(body: GeminiResponse): string {
   const candidate = body.candidates?.[0];
   if (candidate?.finishReason === 'MAX_TOKENS') {
     // Thinking tokens share the output limit, so a long answer can be cut off. Retrying would cut off again.
-    throw new AppError(502, 'AI_TRUNCATED', 'The AI ran out of space before finishing its answer. Please try again, or ask for something shorter.');
+    throw new AppError(
+      502,
+      'AI_TRUNCATED',
+      'The AI ran out of space before finishing its answer. Please try again, or ask for something shorter.',
+    );
   }
   const text = candidate?.content?.parts?.map((part) => part.text ?? '').join('') ?? '';
   if (text.trim().length === 0) {
@@ -115,7 +141,10 @@ function extractText(body: GeminiResponse): string {
 }
 
 function parseJson(text: string): unknown {
-  const unfenced = text.trim().replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/, '');
+  const unfenced = text
+    .trim()
+    .replace(/^```(?:json)?\s*/i, '')
+    .replace(/\s*```$/, '');
   return JSON.parse(unfenced) as unknown;
 }
 
@@ -145,7 +174,9 @@ export function createGeminiClient(
 
     if (!response.ok) {
       const detail = (await response.json().catch(() => ({}))) as GeminiResponse;
-      logger.error(`Gemini request failed: HTTP ${response.status} ${detail.error?.status ?? ''} ${(detail.error?.message ?? '').slice(0, 200)}`);
+      logger.error(
+        `Gemini request failed: HTTP ${response.status} ${detail.error?.status ?? ''} ${(detail.error?.message ?? '').slice(0, 200)}`,
+      );
       throw httpError(response.status);
     }
     return (await response.json()) as GeminiResponse;
@@ -174,12 +205,18 @@ export function createGeminiClient(
         try {
           const parsed = request.schema.safeParse(clampToSchema(parseJson(text), schemas.full));
           if (parsed.success) return parsed.data;
-          logger.warn(`Gemini output failed schema validation (attempt ${attempt}): ${parsed.error.issues.length} issue(s)`);
+          logger.warn(
+            `Gemini output failed schema validation (attempt ${attempt}): ${parsed.error.issues.length} issue(s)`,
+          );
         } catch {
           logger.warn(`Gemini output was not valid JSON (attempt ${attempt})`);
         }
       }
-      throw new AppError(502, 'AI_INVALID_RESPONSE', 'The AI returned an answer in the wrong format. Please try again.');
+      throw new AppError(
+        502,
+        'AI_INVALID_RESPONSE',
+        'The AI returned an answer in the wrong format. Please try again.',
+      );
     },
   };
 }

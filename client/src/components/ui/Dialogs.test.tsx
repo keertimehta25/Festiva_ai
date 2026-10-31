@@ -10,7 +10,16 @@ describe('ConfirmDialog', () => {
   const setup = (busy = false) => {
     const onConfirm = vi.fn();
     const onCancel = vi.fn();
-    const view = render(<ConfirmDialog title="Delete this event?" message="This cannot be undone." confirmLabel="Delete event" busy={busy} onConfirm={onConfirm} onCancel={onCancel} />);
+    const view = render(
+      <ConfirmDialog
+        title="Delete this event?"
+        message="This cannot be undone."
+        confirmLabel="Delete event"
+        busy={busy}
+        onConfirm={onConfirm}
+        onCancel={onCancel}
+      />,
+    );
     return { onConfirm, onCancel, ...view };
   };
 
@@ -48,14 +57,22 @@ describe('ConfirmDialog', () => {
 
 describe('Field', () => {
   it('links label, hint and error to the control for screen readers', () => {
-    render(<Field label="Guests" hint="Whole number" error="Enter a number"><input className="input" /></Field>);
+    render(
+      <Field label="Guests" hint="Whole number" error="Enter a number">
+        <input className="input" />
+      </Field>,
+    );
     const input = screen.getByLabelText('Guests');
     expect(input).toHaveAttribute('aria-invalid', 'true');
     expect(input).toHaveAccessibleDescription('Whole number Enter a number');
   });
 
   it('marks optional fields and has no invalid state without an error', () => {
-    render(<Field label="City" optional><input className="input" /></Field>);
+    render(
+      <Field label="City" optional>
+        <input className="input" />
+      </Field>,
+    );
     expect(screen.getByLabelText(/City/)).not.toHaveAttribute('aria-invalid');
     expect(screen.getByText('(optional)')).toBeInTheDocument();
   });

@@ -23,5 +23,6 @@ const app = createApp({
 
 app.listen(config.port, () => {
   consoleLogger.info(`Festiva AI API listening on port ${config.port} (${config.env})`);
-  if (!config.gemini.apiKey) consoleLogger.warn('GEMINI_API_KEY is not set: AI endpoints will answer 503 until it is configured.');
+  if (!config.gemini.apiKey)
+    consoleLogger.warn('GEMINI_API_KEY is not set: AI endpoints will answer 503 until it is configured.');
 });

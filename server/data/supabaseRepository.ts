@@ -12,7 +12,9 @@ const MAX_ROWS = 500;
 
 function databaseError(action: string, message: string): AppError {
   // The database message is kept as the cause for the server log; clients only see a generic text.
-  return new AppError(502, 'DATABASE_ERROR', `The database could not ${action}`, undefined, { cause: new Error(message) });
+  return new AppError(502, 'DATABASE_ERROR', `The database could not ${action}`, undefined, {
+    cause: new Error(message),
+  });
 }
 
 function unwrap<T>(result: { data: T | null; error: { message: string } | null }, action: string): T {

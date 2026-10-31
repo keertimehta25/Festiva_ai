@@ -5,7 +5,9 @@ export default function NotFoundPage() {
     <div className="container page">
       <h1>Page not found</h1>
       <p>We could not find that page. It may have been moved or the link may be wrong.</p>
-      <Link className="btn btn-primary" to="/">Back to home</Link>
+      <Link className="btn btn-primary" to="/">
+        Back to home
+      </Link>
     </div>
   );
 }

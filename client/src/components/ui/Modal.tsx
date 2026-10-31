@@ -19,7 +19,15 @@ export function Modal({ title, onClose, children }: ModalProps) {
   }, []);
 
   return (
-    <dialog ref={ref} className="modal" aria-labelledby={titleId} onCancel={(event) => { event.preventDefault(); onClose(); }}>
+    <dialog
+      ref={ref}
+      className="modal"
+      aria-labelledby={titleId}
+      onCancel={(event) => {
+        event.preventDefault();
+        onClose();
+      }}
+    >
       <div className="modal-header">
         <h2 id={titleId}>{title}</h2>
         <button type="button" className="btn btn-ghost btn-icon" onClick={onClose} aria-label="Close dialog">

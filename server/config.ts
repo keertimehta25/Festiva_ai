@@ -36,7 +36,10 @@ const envSchema = z
     GEMINI_API_KEY: optionalString,
     GEMINI_MODEL: z.string().min(3).default('gemini-3.6-flash'),
     AI_TIMEOUT_MS: z.coerce.number().int().min(1000).max(120_000).default(90_000),
-    GEMINI_THINKING_LEVEL: z.preprocess((value) => (value === '' ? undefined : value), z.enum(['minimal', 'low', 'medium', 'high']).optional()),
+    GEMINI_THINKING_LEVEL: z.preprocess(
+      (value) => (value === '' ? undefined : value),
+      z.enum(['minimal', 'low', 'medium', 'high']).optional(),
+    ),
   })
   .refine((env) => env.NODE_ENV !== 'production' || env.CORS_ORIGINS.trim().length > 0, {
     path: ['CORS_ORIGINS'],
@@ -54,11 +57,18 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): AppConfig {
   return {
     env: values.NODE_ENV,
     port: values.PORT,
-    corsOrigins: values.CORS_ORIGINS.split(',').map((origin) => origin.trim()).filter(Boolean),
+    corsOrigins: values.CORS_ORIGINS.split(',')
+      .map((origin) => origin.trim())
+      .filter(Boolean),
     trustProxy: values.TRUST_PROXY ?? (values.NODE_ENV === 'production' ? 1 : 0),
     timeZone: values.APP_TIME_ZONE,
     supabaseUrl: values.SUPABASE_URL,
     supabaseServiceRoleKey: values.SUPABASE_SERVICE_ROLE_KEY,
-    gemini: { apiKey: values.GEMINI_API_KEY, model: values.GEMINI_MODEL, timeoutMs: values.AI_TIMEOUT_MS, thinkingLevel: values.GEMINI_THINKING_LEVEL },
+    gemini: {
+      apiKey: values.GEMINI_API_KEY,
+      model: values.GEMINI_MODEL,
+      timeoutMs: values.AI_TIMEOUT_MS,
+      thinkingLevel: values.GEMINI_THINKING_LEVEL,
+    },
   };
 }

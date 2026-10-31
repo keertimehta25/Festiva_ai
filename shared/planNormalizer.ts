@@ -22,7 +22,10 @@ export function normalizePlan(plan: AiPlan, totalBudget: number, model: string):
 
   return {
     ...plan,
-    expenseEstimates: plan.expenseEstimates.map((item) => ({ ...item, estimatedAmount: Math.round(item.estimatedAmount) })),
+    expenseEstimates: plan.expenseEstimates.map((item) => ({
+      ...item,
+      estimatedAmount: Math.round(item.estimatedAmount),
+    })),
     model,
     allocationAmounts,
     estimatedTotal,

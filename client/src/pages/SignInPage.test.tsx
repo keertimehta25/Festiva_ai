@@ -5,8 +5,13 @@ import { describe, expect, it, vi } from 'vitest';
 import { checkA11y } from '../test/a11y';
 import { renderWithProviders } from '../test/render';
 
-const auth = vi.hoisted(() => ({ signIn: vi.fn(async () => null as string | null), signUp: vi.fn(async () => ({ error: null as string | null, needsConfirmation: true })) }));
-vi.mock('../auth/AuthProvider', () => ({ useAuth: () => ({ session: null, loading: false, configured: true, signOut: vi.fn(), ...auth }) }));
+const auth = vi.hoisted(() => ({
+  signIn: vi.fn(async () => null as string | null),
+  signUp: vi.fn(async () => ({ error: null as string | null, needsConfirmation: true })),
+}));
+vi.mock('../auth/AuthProvider', () => ({
+  useAuth: () => ({ session: null, loading: false, configured: true, signOut: vi.fn(), ...auth }),
+}));
 
 const { default: SignInPage } = await import('./SignInPage');
 

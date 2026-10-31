@@ -83,10 +83,38 @@ export function buildSampleWorkspace(today: string): SampleWorkspace {
       },
     ],
     expenses: [
-      { title: 'Venue booking advance', category: 'venue', estimatedAmount: 240_000, actualAmount: 60_000, vendorIndex: 0, notes: 'Advance paid; balance due closer to the date.' },
-      { title: 'Catering (per-plate estimate)', category: 'catering', estimatedAmount: 350_000, actualAmount: 0, vendorIndex: 1, notes: 'Estimate based on a sample quote.' },
-      { title: 'Decor and florals', category: 'decoration', estimatedAmount: 150_000, actualAmount: 0, vendorIndex: null, notes: '' },
-      { title: 'Wedding outfits', category: 'attire', estimatedAmount: 110_000, actualAmount: 130_000, vendorIndex: null, notes: 'Ran over the planned amount after fittings.' },
+      {
+        title: 'Venue booking advance',
+        category: 'venue',
+        estimatedAmount: 240_000,
+        actualAmount: 60_000,
+        vendorIndex: 0,
+        notes: 'Advance paid; balance due closer to the date.',
+      },
+      {
+        title: 'Catering (per-plate estimate)',
+        category: 'catering',
+        estimatedAmount: 350_000,
+        actualAmount: 0,
+        vendorIndex: 1,
+        notes: 'Estimate based on a sample quote.',
+      },
+      {
+        title: 'Decor and florals',
+        category: 'decoration',
+        estimatedAmount: 150_000,
+        actualAmount: 0,
+        vendorIndex: null,
+        notes: '',
+      },
+      {
+        title: 'Wedding outfits',
+        category: 'attire',
+        estimatedAmount: 110_000,
+        actualAmount: 130_000,
+        vendorIndex: null,
+        notes: 'Ran over the planned amount after fittings.',
+      },
     ],
   };
 }

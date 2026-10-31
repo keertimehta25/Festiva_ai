@@ -11,7 +11,10 @@ import { renderWithProviders } from '../test/render';
 import WorkspacePage from './WorkspacePage';
 
 // A tiny in-memory stand-in for the server: mutations change `store`, and getWorkspace reads it back.
-const store = vi.hoisted(() => ({ ws: null as unknown as Workspace, chatReply: { reply: '', proposals: [] as unknown[] } }));
+const store = vi.hoisted(() => ({
+  ws: null as unknown as Workspace,
+  chatReply: { reply: '', proposals: [] as unknown[] },
+}));
 
 vi.mock('../lib/api', async (importOriginal) => {
   const actual = await importOriginal<typeof import('../lib/api')>();
@@ -21,22 +24,39 @@ vi.mock('../lib/api', async (importOriginal) => {
       getWorkspace: vi.fn(async () => structuredClone(store.ws)),
       listEvents: vi.fn(async () => []),
       createExpense: vi.fn(async (_eventId: string, input: Record<string, unknown>) => {
-        const record = { ...input, id: crypto.randomUUID(), eventId: store.ws.event.id, createdAt: '', updatedAt: '' } as unknown as ExpenseRecord;
+        const record = {
+          ...input,
+          id: crypto.randomUUID(),
+          eventId: store.ws.event.id,
+          createdAt: '',
+          updatedAt: '',
+        } as unknown as ExpenseRecord;
         store.ws.expenses.push(record);
         return record;
       }),
-      deleteExpense: vi.fn(async (_eventId: string, id: string) => { store.ws.expenses = store.ws.expenses.filter((e) => e.id !== id); }),
+      deleteExpense: vi.fn(async (_eventId: string, id: string) => {
+        store.ws.expenses = store.ws.expenses.filter((e) => e.id !== id);
+      }),
       updateTask: vi.fn(async (_eventId: string, id: string, patch: Partial<TaskRecord>) => {
         store.ws.tasks = store.ws.tasks.map((t) => (t.id === id ? { ...t, ...patch } : t));
         return store.ws.tasks.find((t) => t.id === id);
       }),
       createTask: vi.fn(async (_eventId: string, input: Record<string, unknown>) => {
-        const record = { ...input, id: crypto.randomUUID(), eventId: store.ws.event.id, status: 'pending', notes: '', vendorId: null, createdAt: '', updatedAt: '' } as unknown as TaskRecord;
+        const record = {
+          ...input,
+          id: crypto.randomUUID(),
+          eventId: store.ws.event.id,
+          status: 'pending',
+          notes: '',
+          vendorId: null,
+          createdAt: '',
+          updatedAt: '',
+        } as unknown as TaskRecord;
         store.ws.tasks.push(record);
         return record;
       }),
       updateEvent: vi.fn(async (_eventId: string, patch: Record<string, unknown>) => {
-        store.ws.event = { ...store.ws.event, ...patch } as Workspace['event'];
+        store.ws.event = { ...store.ws.event, ...patch };
         return { event: store.ws.event };
       }),
       chat: vi.fn(async () => store.chatReply),
@@ -48,22 +68,35 @@ const { api } = await import('../lib/api');
 const TODAY = todayInZone();
 
 function seed(overrides: Partial<Workspace> = {}) {
-  const event = makeEvent({ totalBudget: 800_000, allocations: makeAllocations({ venue: 200_000, catering: 300_000, decoration: 100_000, miscellaneous: 200_000 }), eventDate: addDays(TODAY, 90) });
+  const event = makeEvent({
+    totalBudget: 800_000,
+    allocations: makeAllocations({ venue: 200_000, catering: 300_000, decoration: 100_000, miscellaneous: 200_000 }),
+    eventDate: addDays(TODAY, 90),
+  });
   store.ws = { event, tasks: [], expenses: [], vendors: [], ...overrides };
   store.chatReply = { reply: '', proposals: [] };
 }
 
 /** The card for a stat tile, found by its label (labels also appear in table headings). */
-const stat = (label: string) => screen.getByText(label, { selector: '.stat-label' }).parentElement as HTMLElement;
+function stat(label: string): HTMLElement {
+  const card = screen.getByText(label, { selector: '.stat-label' }).parentElement;
+  if (!card) throw new Error(`Stat tile "${label}" has no card`);
+  return card;
+}
 
 function open(tab: string) {
   return renderWithProviders(
-    <Routes><Route path="events/:eventId/*" element={<WorkspacePage />} /></Routes>,
+    <Routes>
+      <Route path="events/:eventId/*" element={<WorkspacePage />} />
+    </Routes>,
     `/events/${store.ws.event.id}/${tab}`,
   );
 }
 
-beforeEach(() => { vi.clearAllMocks(); seed(); });
+beforeEach(() => {
+  vi.clearAllMocks();
+  seed();
+});
 
 describe('Budget tab', () => {
   it('adds an expense and the remaining balance and percentage update', async () => {
@@ -83,7 +116,10 @@ describe('Budget tab', () => {
     await waitFor(() => expect(stat('Remaining')).toHaveTextContent('₹6,75,000'));
     expect(stat('Spent so far')).toHaveTextContent('15.6% of budget');
     expect(screen.getAllByText('Venue advance').length).toBeGreaterThan(0);
-    expect(api.createExpense).toHaveBeenCalledWith(store.ws.event.id, expect.objectContaining({ title: 'Venue advance', category: 'venue', actualAmount: 125_000, estimatedAmount: 0 }));
+    expect(api.createExpense).toHaveBeenCalledWith(
+      store.ws.event.id,
+      expect.objectContaining({ title: 'Venue advance', category: 'venue', actualAmount: 125_000, estimatedAmount: 0 }),
+    );
   });
 
   it.each([['-500'], ['12.5'], ['abc']])('rejects the invalid amount "%s" without calling the API', async (amount) => {
@@ -109,7 +145,12 @@ describe('Budget tab', () => {
   });
 
   it('warns about overspending with text, not colour alone, and offers a reallocation', async () => {
-    seed({ expenses: [makeExpense({ title: 'Flowers', category: 'decoration', actualAmount: 130_000 }), makeExpense({ title: 'Hall', category: 'venue', actualAmount: 50_000, estimatedAmount: 60_000 })] });
+    seed({
+      expenses: [
+        makeExpense({ title: 'Flowers', category: 'decoration', actualAmount: 130_000 }),
+        makeExpense({ title: 'Hall', category: 'venue', actualAmount: 50_000, estimatedAmount: 60_000 }),
+      ],
+    });
     const user = userEvent.setup();
     open('budget');
     const alert = await screen.findByRole('alert');
@@ -119,7 +160,8 @@ describe('Budget tab', () => {
     const suggestion = screen.getByText(/Move ₹30,000 from .* to Decoration/);
     await user.click(within(suggestion.closest('li') as HTMLElement).getByRole('button', { name: 'Apply' }));
     await waitFor(() => expect(api.updateEvent).toHaveBeenCalled());
-    const allocations = (vi.mocked(api.updateEvent).mock.calls[0]?.[1] as { allocations: Record<string, number> }).allocations;
+    const allocations = (vi.mocked(api.updateEvent).mock.calls[0]?.[1] as { allocations: Record<string, number> })
+      .allocations;
     expect(allocations.decoration).toBe(130_000);
     expect(Object.values(allocations).reduce((a, b) => a + b, 0)).toBe(800_000);
   });
@@ -150,10 +192,22 @@ describe('Budget tab', () => {
 
 describe('Tasks tab', () => {
   const tasks = () => [
-    makeTask({ title: 'Book venue', status: 'completed', dueDate: addDays(TODAY, -10), category: 'venue', priority: 'high' }),
+    makeTask({
+      title: 'Book venue',
+      status: 'completed',
+      dueDate: addDays(TODAY, -10),
+      category: 'venue',
+      priority: 'high',
+    }),
     makeTask({ title: 'Order invitations', status: 'pending', dueDate: addDays(TODAY, -2), category: 'invitations' }),
     makeTask({ title: 'Taste menu', status: 'in_progress', dueDate: addDays(TODAY, 3), category: 'catering' }),
-    makeTask({ title: 'Book DJ', status: 'pending', dueDate: addDays(TODAY, 30), category: 'entertainment', priority: 'low' }),
+    makeTask({
+      title: 'Book DJ',
+      status: 'pending',
+      dueDate: addDays(TODAY, 30),
+      category: 'entertainment',
+      priority: 'low',
+    }),
   ];
 
   it('shows progress, flags overdue tasks and completes a task, updating the percentage', async () => {
@@ -200,7 +254,12 @@ describe('Tasks tab', () => {
 
     await user.type(within(dialog).getByLabelText('Task'), 'Call photographer');
     await user.click(within(dialog).getByRole('button', { name: 'Add task' }));
-    await waitFor(() => expect(api.createTask).toHaveBeenCalledWith(store.ws.event.id, expect.objectContaining({ title: 'Call photographer', status: 'pending' })));
+    await waitFor(() =>
+      expect(api.createTask).toHaveBeenCalledWith(
+        store.ws.event.id,
+        expect.objectContaining({ title: 'Call photographer', status: 'pending' }),
+      ),
+    );
     expect(await screen.findByText('Call photographer')).toBeInTheDocument();
   });
 
@@ -211,7 +270,10 @@ describe('Tasks tab', () => {
     await user.click(await screen.findByRole('button', { name: 'Timeline' }));
     const items = screen.getAllByRole('listitem').filter((li) => li.closest('ol.timeline'));
     expect(items.map((li) => li.textContent)).toEqual([
-      expect.stringContaining('Book venue'), expect.stringContaining('Order invitations'), expect.stringContaining('Taste menu'), expect.stringContaining('Book DJ'),
+      expect.stringContaining('Book venue'),
+      expect.stringContaining('Order invitations'),
+      expect.stringContaining('Taste menu'),
+      expect.stringContaining('Book DJ'),
     ]);
   });
 });
@@ -220,7 +282,14 @@ describe('Vendors tab', () => {
   it('shows vendor totals and pending payments and states that vendors are user-entered', async () => {
     seed({
       vendors: [
-        makeVendor({ name: 'Hall A', category: 'venue', bookingStatus: 'booked', quotedPrice: 200_000, advanceAmount: 50_000, paymentStatus: 'advance_paid' }),
+        makeVendor({
+          name: 'Hall A',
+          category: 'venue',
+          bookingStatus: 'booked',
+          quotedPrice: 200_000,
+          advanceAmount: 50_000,
+          paymentStatus: 'advance_paid',
+        }),
         makeVendor({ name: 'Caterer B', bookingStatus: 'quoted', quotedPrice: 90_000 }),
         makeVendor({ name: 'Rejected C', bookingStatus: 'rejected', quotedPrice: 500_000 }),
       ],
@@ -244,25 +313,57 @@ describe('Copilot tab', () => {
   it('sends the question, shows the answer, and applies a proposal only after confirmation', async () => {
     store.chatReply = {
       reply: 'Book the DJ this week.',
-      proposals: [{ type: 'add_task', summary: 'Add a DJ booking task', task: { title: 'Book DJ', description: 'Confirm playlist', category: 'entertainment', priority: 'high', dueDate: addDays(TODAY, 7) } }],
+      proposals: [
+        {
+          type: 'add_task',
+          summary: 'Add a DJ booking task',
+          task: {
+            title: 'Book DJ',
+            description: 'Confirm playlist',
+            category: 'entertainment',
+            priority: 'high',
+            dueDate: addDays(TODAY, 7),
+          },
+        },
+      ],
     };
     const user = userEvent.setup();
     open('copilot');
     await user.click(await screen.findByRole('button', { name: 'What tasks am I likely to have forgotten?' }));
 
     expect(await screen.findByText('Book the DJ this week.')).toBeInTheDocument();
-    expect(vi.mocked(api.chat)).toHaveBeenCalledWith(store.ws.event.id, 'What tasks am I likely to have forgotten?', []);
+    expect(vi.mocked(api.chat)).toHaveBeenCalledWith(
+      store.ws.event.id,
+      'What tasks am I likely to have forgotten?',
+      [],
+    );
     expect(screen.getByText('Suggested change: not applied yet')).toBeInTheDocument();
     expect(api.createTask).not.toHaveBeenCalled();
     expect(store.ws.tasks).toHaveLength(0);
 
     await user.click(screen.getByRole('button', { name: 'Apply this change' }));
-    await waitFor(() => expect(api.createTask).toHaveBeenCalledWith(store.ws.event.id, expect.objectContaining({ title: 'Book DJ', priority: 'high' })));
+    await waitFor(() =>
+      expect(api.createTask).toHaveBeenCalledWith(
+        store.ws.event.id,
+        expect.objectContaining({ title: 'Book DJ', priority: 'high' }),
+      ),
+    );
     expect(await screen.findByText('Applied')).toBeInTheDocument();
   });
 
   it('lets the user dismiss a proposal without any change', async () => {
-    store.chatReply = { reply: 'Consider moving money.', proposals: [{ type: 'reallocate', summary: 'Move to decor', fromCategory: 'venue', toCategory: 'decoration', amount: 10_000 }] };
+    store.chatReply = {
+      reply: 'Consider moving money.',
+      proposals: [
+        {
+          type: 'reallocate',
+          summary: 'Move to decor',
+          fromCategory: 'venue',
+          toCategory: 'decoration',
+          amount: 10_000,
+        },
+      ],
+    };
     const user = userEvent.setup();
     open('copilot');
     await user.type(await screen.findByLabelText('Your question'), 'Decoration budget grew');
@@ -274,11 +375,15 @@ describe('Copilot tab', () => {
 
   it('shows an understandable error with a retry when the AI is unavailable', async () => {
     const { ApiError } = await import('../lib/api');
-    vi.mocked(api.chat).mockRejectedValueOnce(new ApiError(503, 'AI_NOT_CONFIGURED', 'The AI assistant is not configured on this server yet.'));
+    vi.mocked(api.chat).mockRejectedValueOnce(
+      new ApiError(503, 'AI_NOT_CONFIGURED', 'The AI assistant is not configured on this server yet.'),
+    );
     const user = userEvent.setup();
     open('copilot');
     await user.click(await screen.findByRole('button', { name: 'Suggest a rain contingency plan.' }));
-    expect(await screen.findByRole('alert')).toHaveTextContent('The AI assistant is not configured on this server yet.');
+    expect(await screen.findByRole('alert')).toHaveTextContent(
+      'The AI assistant is not configured on this server yet.',
+    );
 
     store.chatReply = { reply: 'Use a covered hall.', proposals: [] };
     await user.click(screen.getByRole('button', { name: 'Try again' }));
@@ -294,14 +399,19 @@ describe('Copilot tab', () => {
     await user.click(screen.getByRole('button', { name: /Send/ }));
     await screen.findByText('First answer.');
 
-    vi.mocked(api.chat).mockRejectedValueOnce(new ApiError(502, 'AI_UNAVAILABLE', 'The AI service is temporarily unavailable. Please try again shortly.'));
+    vi.mocked(api.chat).mockRejectedValueOnce(
+      new ApiError(502, 'AI_UNAVAILABLE', 'The AI service is temporarily unavailable. Please try again shortly.'),
+    );
     store.chatReply = { reply: 'Second answer.', proposals: [] };
     await user.type(screen.getByLabelText('Your question'), 'Second question');
     await user.click(screen.getByRole('button', { name: /Send/ }));
     await user.click(await screen.findByRole('button', { name: 'Try again' }));
     await screen.findByText('Second answer.');
 
-    const history = [{ role: 'user', content: 'First question' }, { role: 'assistant', content: 'First answer.' }];
+    const history = [
+      { role: 'user', content: 'First question' },
+      { role: 'assistant', content: 'First answer.' },
+    ];
     expect(vi.mocked(api.chat).mock.calls.at(-1)).toEqual([store.ws.event.id, 'Second question', history]);
     expect(screen.getAllByText('Second question')).toHaveLength(1);
   });
@@ -339,7 +449,9 @@ describe('Tab navigation', () => {
     for (const name of ['Budget', 'Tasks', 'Vendors', 'Copilot', 'AI plan']) {
       await user.click(within(nav).getByRole('link', { name }));
     }
-    const hrefs = within(nav).getAllByRole('link').map((link) => link.getAttribute('href'));
+    const hrefs = within(nav)
+      .getAllByRole('link')
+      .map((link) => link.getAttribute('href'));
     expect(hrefs).toEqual([
       `/events/${id}`,
       `/events/${id}/plan`,

@@ -34,7 +34,11 @@ export default function WorkspacePage() {
 
   return (
     <div className="container page">
-      <p><Link to="/dashboard"><ArrowLeft size={16} aria-hidden="true" className="icon-inline" /> All events</Link></p>
+      <p>
+        <Link to="/dashboard">
+          <ArrowLeft size={16} aria-hidden="true" className="icon-inline" /> All events
+        </Link>
+      </p>
       {isLoading && <Loading label="Loading your event" />}
       {error && <ErrorNotice error={error} onRetry={() => void refetch()} />}
       {data && (
@@ -42,15 +46,20 @@ export default function WorkspacePage() {
           <div className="page-header">
             <div>
               <h1>{data.event.name}</h1>
-              <p className="muted" style={{ margin: 0 }}>
-                {EVENT_TYPE_LABELS[data.event.eventType]} · {formatDate(data.event.eventDate)}{data.event.dateIsApproximate ? ' (approximate)' : ''}
+              <p className="muted m-0">
+                {EVENT_TYPE_LABELS[data.event.eventType]} · {formatDate(data.event.eventDate)}
+                {data.event.dateIsApproximate ? ' (approximate)' : ''}
                 {data.event.city ? ` · ${data.event.city}` : ''}
                 {data.event.isSample ? ' · Sample data' : ''}
               </p>
             </div>
           </div>
           <nav aria-label="Event sections" className="tabs">
-            {TABS.map((tab) => <NavLink key={tab.label} to={`/events/${eventId}${tab.to ? `/${tab.to}` : ''}`} end={tab.end}>{tab.label}</NavLink>)}
+            {TABS.map((tab) => (
+              <NavLink key={tab.label} to={`/events/${eventId}${tab.to ? `/${tab.to}` : ''}`} end={tab.end}>
+                {tab.label}
+              </NavLink>
+            ))}
           </nav>
           <Suspense fallback={<Loading />}>
             <Routes>

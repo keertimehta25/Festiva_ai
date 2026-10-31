@@ -22,7 +22,14 @@ const validEvent = { name: 'Aanya’s wedding', eventType: 'wedding', totalBudge
 describe('event validation', () => {
   it('accepts a minimal event and fills sensible defaults', () => {
     const parsed = eventCreateSchema(TODAY).parse(validEvent);
-    expect(parsed).toMatchObject({ currency: 'INR', durationHours: 4, foodPreference: 'mixed', venueSetting: 'either', priorities: [], eventDate: null });
+    expect(parsed).toMatchObject({
+      currency: 'INR',
+      durationHours: 4,
+      foodPreference: 'mixed',
+      venueSetting: 'either',
+      priorities: [],
+      eventDate: null,
+    });
   });
 
   it.each([
@@ -89,7 +96,9 @@ describe('event input checks', () => {
   });
 
   it('warns about contradictory priorities and outdoor events in the monsoon', () => {
-    const notes = analyzeEventInput(parsed({ priorities: ['luxury', 'affordability'], venueSetting: 'outdoor', eventDate: '2027-07-10' })).join(' ');
+    const notes = analyzeEventInput(
+      parsed({ priorities: ['luxury', 'affordability'], venueSetting: 'outdoor', eventDate: '2027-07-10' }),
+    ).join(' ');
     expect(notes).toMatch(/Luxury and affordability/);
     expect(notes).toMatch(/monsoon/);
   });
@@ -103,7 +112,11 @@ describe('task, expense and vendor validation', () => {
   it('requires a task title and rejects invalid dates', () => {
     expect(taskInputSchema.safeParse({ title: '' }).success).toBe(false);
     expect(taskInputSchema.safeParse({ title: 'Book venue', dueDate: '2026-13-01' }).success).toBe(false);
-    expect(taskInputSchema.parse({ title: 'Book venue' })).toMatchObject({ status: 'pending', priority: 'medium', category: 'planning' });
+    expect(taskInputSchema.parse({ title: 'Book venue' })).toMatchObject({
+      status: 'pending',
+      priority: 'medium',
+      category: 'planning',
+    });
   });
 
   it('rejects negative, fractional and non-numeric money', () => {
@@ -138,9 +151,18 @@ describe('AI plan schema and normalisation', () => {
 
   it.each([
     ['a missing section', { ...validPlan, risks: undefined }],
-    ['an unknown budget category', { ...validPlan, budgetAllocation: [{ category: 'yacht', percent: 10, rationale: '' }] }],
-    ['a percentage above 100', { ...validPlan, budgetAllocation: [{ category: 'venue', percent: 250, rationale: '' }] }],
-    ['a negative estimate', { ...validPlan, expenseEstimates: [{ category: 'venue', item: 'x', estimatedAmount: -5 }] }],
+    [
+      'an unknown budget category',
+      { ...validPlan, budgetAllocation: [{ category: 'yacht', percent: 10, rationale: '' }] },
+    ],
+    [
+      'a percentage above 100',
+      { ...validPlan, budgetAllocation: [{ category: 'venue', percent: 250, rationale: '' }] },
+    ],
+    [
+      'a negative estimate',
+      { ...validPlan, expenseEstimates: [{ category: 'venue', item: 'x', estimatedAmount: -5 }] },
+    ],
     ['an over-long summary', { ...validPlan, concept: { ...validPlan.concept, summary: 'x'.repeat(901) } }],
   ])('rejects %s', (_label, plan) => {
     expect(aiPlanSchema.safeParse(plan).success).toBe(false);

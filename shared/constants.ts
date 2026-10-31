@@ -135,7 +135,13 @@ export const VENUE_SETTING_LABELS: Record<VenueSetting, string> = {
   either: 'No preference',
 };
 
-export const PLANNING_PRIORITIES = ['affordability', 'luxury', 'sustainability', 'accessibility', 'convenience'] as const;
+export const PLANNING_PRIORITIES = [
+  'affordability',
+  'luxury',
+  'sustainability',
+  'accessibility',
+  'convenience',
+] as const;
 export type PlanningPriority = (typeof PLANNING_PRIORITIES)[number];
 export const PLANNING_PRIORITY_LABELS: Record<PlanningPriority, string> = {
   affordability: 'Affordability',
@@ -160,10 +166,76 @@ export const LIMITS = {
 
 /** Share of the total budget each category receives by default, per event type (percent, sums to 100). */
 export const DEFAULT_ALLOCATION_PERCENT: Record<EventType, Record<BudgetCategory, number>> = {
-  wedding: { venue: 20, catering: 30, decoration: 12, photography: 10, entertainment: 6, attire: 8, invitations: 2, transportation: 3, accommodation: 5, miscellaneous: 4 },
-  birthday: { venue: 15, catering: 40, decoration: 15, photography: 5, entertainment: 12, attire: 3, invitations: 2, transportation: 2, accommodation: 0, miscellaneous: 6 },
-  anniversary: { venue: 20, catering: 35, decoration: 14, photography: 8, entertainment: 8, attire: 5, invitations: 2, transportation: 3, accommodation: 0, miscellaneous: 5 },
-  community: { venue: 18, catering: 28, decoration: 10, photography: 4, entertainment: 18, attire: 0, invitations: 4, transportation: 6, accommodation: 0, miscellaneous: 12 },
-  college: { venue: 12, catering: 25, decoration: 12, photography: 5, entertainment: 25, attire: 0, invitations: 3, transportation: 4, accommodation: 0, miscellaneous: 14 },
-  custom: { venue: 20, catering: 30, decoration: 12, photography: 6, entertainment: 10, attire: 4, invitations: 3, transportation: 5, accommodation: 4, miscellaneous: 6 },
+  wedding: {
+    venue: 20,
+    catering: 30,
+    decoration: 12,
+    photography: 10,
+    entertainment: 6,
+    attire: 8,
+    invitations: 2,
+    transportation: 3,
+    accommodation: 5,
+    miscellaneous: 4,
+  },
+  birthday: {
+    venue: 15,
+    catering: 40,
+    decoration: 15,
+    photography: 5,
+    entertainment: 12,
+    attire: 3,
+    invitations: 2,
+    transportation: 2,
+    accommodation: 0,
+    miscellaneous: 6,
+  },
+  anniversary: {
+    venue: 20,
+    catering: 35,
+    decoration: 14,
+    photography: 8,
+    entertainment: 8,
+    attire: 5,
+    invitations: 2,
+    transportation: 3,
+    accommodation: 0,
+    miscellaneous: 5,
+  },
+  community: {
+    venue: 18,
+    catering: 28,
+    decoration: 10,
+    photography: 4,
+    entertainment: 18,
+    attire: 0,
+    invitations: 4,
+    transportation: 6,
+    accommodation: 0,
+    miscellaneous: 12,
+  },
+  college: {
+    venue: 12,
+    catering: 25,
+    decoration: 12,
+    photography: 5,
+    entertainment: 25,
+    attire: 0,
+    invitations: 3,
+    transportation: 4,
+    accommodation: 0,
+    miscellaneous: 14,
+  },
+  custom: {
+    venue: 20,
+    catering: 30,
+    decoration: 12,
+    photography: 6,
+    entertainment: 10,
+    attire: 4,
+    invitations: 3,
+    transportation: 5,
+    accommodation: 4,
+    miscellaneous: 6,
+  },
 };

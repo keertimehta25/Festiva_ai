@@ -16,7 +16,12 @@ describe('loadConfig', () => {
   it('applies safe defaults', () => {
     const config = loadConfig(baseEnv);
     expect(config).toMatchObject({ env: 'development', port: 8787, trustProxy: 0, timeZone: 'Asia/Kolkata' });
-    expect(config.gemini).toEqual({ apiKey: undefined, model: 'gemini-3.6-flash', timeoutMs: 90_000, thinkingLevel: undefined });
+    expect(config.gemini).toEqual({
+      apiKey: undefined,
+      model: 'gemini-3.6-flash',
+      timeoutMs: 90_000,
+      thinkingLevel: undefined,
+    });
   });
 
   it('treats a blank Gemini key as not configured', () => {
@@ -43,7 +48,11 @@ describe('loadConfig', () => {
 
   it('requires an explicit CORS origin in production and trusts one proxy hop', () => {
     expect(() => loadConfig({ ...baseEnv, NODE_ENV: 'production' })).toThrow(/CORS_ORIGINS/);
-    const config = loadConfig({ ...baseEnv, NODE_ENV: 'production', CORS_ORIGINS: 'https://a.example, https://b.example' });
+    const config = loadConfig({
+      ...baseEnv,
+      NODE_ENV: 'production',
+      CORS_ORIGINS: 'https://a.example, https://b.example',
+    });
     expect(config.corsOrigins).toEqual(['https://a.example', 'https://b.example']);
     expect(config.trustProxy).toBe(1);
   });
@@ -52,10 +61,20 @@ describe('loadConfig', () => {
 describe('AI service without configuration', () => {
   it('reports itself as unconfigured and answers 503 rather than returning made-up content', async () => {
     const fetchFn = vi.fn();
-    const client = createGeminiClient({ apiKey: undefined, model: 'm', timeoutMs: 1000, thinkingLevel: undefined }, silentLogger, fetchFn as unknown as typeof fetch);
+    const client = createGeminiClient(
+      { apiKey: undefined, model: 'm', timeoutMs: 1000, thinkingLevel: undefined },
+      silentLogger,
+      fetchFn,
+    );
     const service = createGeminiService(client, false);
     expect(service.isConfigured).toBe(false);
-    await expect(service.chat({ workspace: { event: makeEvent(), tasks: [], expenses: [], vendors: [], today: '2026-10-22' }, message: 'hi', history: [] })).rejects.toMatchObject({
+    await expect(
+      service.chat({
+        workspace: { event: makeEvent(), tasks: [], expenses: [], vendors: [], today: '2026-10-22' },
+        message: 'hi',
+        history: [],
+      }),
+    ).rejects.toMatchObject({
       status: 503,
       code: 'AI_NOT_CONFIGURED',
     });
@@ -102,7 +121,15 @@ describe('Supabase repository', () => {
     }
     builder.maybeSingle = async () => ({ data: rows[0] ?? null, error: null });
     builder.then = (resolve: (value: unknown) => void) => resolve({ data: rows, error: null });
-    return { client: { from: (table: string) => { calls.push(['from', table]); return builder; } }, calls };
+    return {
+      client: {
+        from: (table: string) => {
+          calls.push(['from', table]);
+          return builder;
+        },
+      },
+      calls,
+    };
   }
 
   it('always scopes reads by the authenticated user id', async () => {
@@ -122,11 +149,25 @@ describe('Supabase repository', () => {
     const repo = createSupabaseRepository(client as never);
     await repo.tasks.list('alice', 'e1');
     await repo.tasks.remove('alice', 'e1', 't1');
-    await repo.tasks.create('alice', 'e1', { title: 'New', description: '', dueDate: null, priority: 'low', status: 'pending', category: 'planning', notes: '', vendorId: null });
+    await repo.tasks.create('alice', 'e1', {
+      title: 'New',
+      description: '',
+      dueDate: null,
+      priority: 'low',
+      status: 'pending',
+      category: 'planning',
+      notes: '',
+      vendorId: null,
+    });
 
     expect(calls.filter((c) => c[0] === 'eq' && c[1] === 'user_id')).toHaveLength(2);
     expect(calls.filter((c) => c[0] === 'eq' && c[1] === 'event_id')).toHaveLength(2);
     const insert = calls.find((c) => c[0] === 'insert');
-    expect((insert?.[1] as Record<string, unknown>[])[0]).toMatchObject({ user_id: 'alice', event_id: 'e1', due_date: null, vendor_id: null });
+    expect((insert?.[1] as Record<string, unknown>[])[0]).toMatchObject({
+      user_id: 'alice',
+      event_id: 'e1',
+      due_date: null,
+      vendor_id: null,
+    });
   });
 });

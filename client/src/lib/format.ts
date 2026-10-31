@@ -1,5 +1,10 @@
 const rupees = new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 });
-const dateFormat = new Intl.DateTimeFormat('en-IN', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC' });
+const dateFormat = new Intl.DateTimeFormat('en-IN', {
+  day: 'numeric',
+  month: 'short',
+  year: 'numeric',
+  timeZone: 'UTC',
+});
 
 /** ₹12,34,567 with Indian digit grouping. Negative amounts keep their sign. */
 export const formatRupees = (amount: number): string => rupees.format(amount);

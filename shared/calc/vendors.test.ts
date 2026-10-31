@@ -16,15 +16,32 @@ describe('vendor payments', () => {
 describe('summarizeVendors', () => {
   it('excludes rejected vendors and counts pending money only for booked ones', () => {
     const totals = summarizeVendors([
-      makeVendor({ bookingStatus: 'booked', quotedPrice: 200_000, advanceAmount: 50_000, paymentStatus: 'advance_paid' }),
+      makeVendor({
+        bookingStatus: 'booked',
+        quotedPrice: 200_000,
+        advanceAmount: 50_000,
+        paymentStatus: 'advance_paid',
+      }),
       makeVendor({ bookingStatus: 'quoted', quotedPrice: 80_000 }),
       makeVendor({ bookingStatus: 'rejected', quotedPrice: 999_999 }),
     ]);
-    expect(totals).toEqual({ quotedTotal: 280_000, committedTotal: 200_000, paidTotal: 50_000, pendingTotal: 150_000, bookedCount: 1 });
+    expect(totals).toEqual({
+      quotedTotal: 280_000,
+      committedTotal: 200_000,
+      paidTotal: 50_000,
+      pendingTotal: 150_000,
+      bookedCount: 1,
+    });
   });
 
   it('is all zeros for an empty list', () => {
-    expect(summarizeVendors([])).toEqual({ quotedTotal: 0, committedTotal: 0, paidTotal: 0, pendingTotal: 0, bookedCount: 0 });
+    expect(summarizeVendors([])).toEqual({
+      quotedTotal: 0,
+      committedTotal: 0,
+      paidTotal: 0,
+      pendingTotal: 0,
+      bookedCount: 0,
+    });
   });
 });
 

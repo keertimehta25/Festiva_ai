@@ -13,5 +13,19 @@ export default defineConfig({
     include: ['shared/**/*.test.ts', 'server/**/*.test.ts', 'client/**/*.test.{ts,tsx}'],
     setupFiles: ['./client/src/test/setup.ts'],
     restoreMocks: true,
+    coverage: {
+      provider: 'v8',
+      include: ['shared/**/*.ts', 'server/**/*.ts', 'client/src/**/*.{ts,tsx}'],
+      exclude: [
+        '**/*.test.{ts,tsx}',
+        '**/test-utils.ts',
+        'client/src/test/**',
+        'client/src/main.tsx',
+        'server/index.ts',
+      ],
+      reporter: ['text-summary'],
+      // A floor, not a goal: it stops the suite from quietly getting weaker.
+      thresholds: { lines: 70, statements: 70, functions: 60, branches: 65 },
+    },
   },
 });

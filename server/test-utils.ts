@@ -35,15 +35,27 @@ export function makeFakeAi(overrides: Partial<AiService> = {}): AiService {
     isConfigured: true,
     generatePlan: vi.fn(async () => makeAiPlan()),
     chat: vi.fn(async () => ({ reply: 'Start by confirming the venue.', proposals: [] })),
-    suggestSavings: vi.fn(async () => ({ ideas: [{ title: 'Seasonal flowers', detail: 'Use seasonal blooms.', category: 'decoration' as const }] })),
+    suggestSavings: vi.fn(async () => ({
+      ideas: [{ title: 'Seasonal flowers', detail: 'Use seasonal blooms.', category: 'decoration' as const }],
+    })),
     ...overrides,
   };
 }
 
-export function buildTestApp(options: { ai?: AiService; limits?: { api?: number; ai?: number }; config?: Partial<AppConfig> } = {}) {
+export function buildTestApp(
+  options: { ai?: AiService; limits?: { api?: number; ai?: number }; config?: Partial<AppConfig> } = {},
+) {
   const repo = createMemoryRepository();
   const ai = options.ai ?? makeFakeAi();
-  const app = createApp({ config: { ...testConfig, ...options.config }, repo, ai, auth: fakeAuth, logger: silentLogger, now: () => FIXED_NOW, limits: options.limits });
+  const app = createApp({
+    config: { ...testConfig, ...options.config },
+    repo,
+    ai,
+    auth: fakeAuth,
+    logger: silentLogger,
+    now: () => FIXED_NOW,
+    limits: options.limits,
+  });
   return { app, repo, ai };
 }
 

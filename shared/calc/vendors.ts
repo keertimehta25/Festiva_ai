@@ -37,7 +37,9 @@ export function summarizeVendors(vendors: VendorRecord[]): VendorTotals {
 
 /** Actual spending recorded against a vendor through linked expenses. */
 export function linkedExpenseTotal(expenses: ExpenseRecord[], vendorId: string): number {
-  return expenses.filter((expense) => expense.vendorId === vendorId).reduce((total, expense) => total + expense.actualAmount, 0);
+  return expenses
+    .filter((expense) => expense.vendorId === vendorId)
+    .reduce((total, expense) => total + expense.actualAmount, 0);
 }
 
 /** Vendors still being chased (not booked or rejected) whose follow-up date has arrived. */

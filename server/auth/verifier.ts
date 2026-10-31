@@ -16,7 +16,7 @@ export function createSupabaseVerifier(db: SupabaseClient): AuthVerifier {
   return {
     async verify(token) {
       const { data, error } = await db.auth.getUser(token);
-      if (error || !data.user) return null;
+      if (error) return null;
       return { id: data.user.id, email: data.user.email };
     },
   };

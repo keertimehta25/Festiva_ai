@@ -11,6 +11,8 @@ export function toRow(record: object): Record<string, unknown> {
 }
 
 /** Converts a database row to a camelCase record. `user_id` is internal and never leaves the data layer. */
+// The caller chooses the record type; the database layer cannot infer it from a generic row.
+// eslint-disable-next-line @typescript-eslint/no-unnecessary-type-parameters
 export function fromRow<T>(row: Record<string, unknown>): T {
   const visible = Object.fromEntries(Object.entries(row).filter(([key]) => key !== 'user_id'));
   return mapKeys(visible, toCamel) as T;

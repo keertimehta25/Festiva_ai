@@ -25,13 +25,16 @@ export function EmptyState({ title, children, action }: { title: string; childre
 
 /** Understandable error message with an optional retry. */
 export function ErrorNotice({ error, onRetry }: { error: unknown; onRetry?: () => void }) {
-  const message = error instanceof ApiError || error instanceof Error ? error.message : 'Something went wrong. Please try again.';
+  const message =
+    error instanceof ApiError || error instanceof Error ? error.message : 'Something went wrong. Please try again.';
   return (
     <Notice tone="danger" live>
       <p>{message}</p>
       {onRetry && (
         <div className="notice-actions">
-          <button type="button" className="btn btn-secondary btn-sm" onClick={onRetry}>Try again</button>
+          <button type="button" className="btn btn-secondary btn-sm" onClick={onRetry}>
+            Try again
+          </button>
         </div>
       )}
     </Notice>

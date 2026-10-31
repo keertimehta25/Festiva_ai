@@ -12,7 +12,10 @@ export function RequireAuth() {
     return (
       <div className="container page">
         <Notice tone="danger" live>
-          <p>Sign-in is not configured for this deployment. The site owner needs to set the Supabase environment variables.</p>
+          <p>
+            Sign-in is not configured for this deployment. The site owner needs to set the Supabase environment
+            variables.
+          </p>
         </Notice>
       </div>
     );

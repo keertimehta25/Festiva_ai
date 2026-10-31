@@ -23,7 +23,11 @@ export function Field({ label, error, hint, optional = false, children }: FieldP
         {label} {optional && <span className="optional">(optional)</span>}
       </label>
       {cloneElement(children, { id, 'aria-describedby': describedBy, 'aria-invalid': error ? true : undefined })}
-      {hint && <span id={hintId} className="hint">{hint}</span>}
+      {hint && (
+        <span id={hintId} className="hint">
+          {hint}
+        </span>
+      )}
       {error && (
         <span id={errorId} className="field-error">
           <AlertCircle size={16} aria-hidden="true" className="icon-inline" /> {error}

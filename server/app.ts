@@ -1,7 +1,14 @@
 import cors from 'cors';
 import express, { type Express } from 'express';
 import helmet from 'helmet';
-import { expenseInputSchema, expenseUpdateSchema, taskInputSchema, taskUpdateSchema, vendorInputSchema, vendorUpdateSchema } from '@shared/schemas';
+import {
+  expenseInputSchema,
+  expenseUpdateSchema,
+  taskInputSchema,
+  taskUpdateSchema,
+  vendorInputSchema,
+  vendorUpdateSchema,
+} from '@shared/schemas';
 import { LIMITS } from '@shared/constants';
 import type { AiService } from './ai/aiService';
 import type { AuthVerifier } from './auth/verifier';

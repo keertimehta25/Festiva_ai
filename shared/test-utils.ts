@@ -96,7 +96,11 @@ export function makeEvent(overrides: Partial<EventRecord> = {}): EventRecord {
 /** A well-formed AI plan with estimates that fit an ₹8 lakh budget. */
 export function makeAiPlan(overrides: Partial<AiPlan> = {}): AiPlan {
   return {
-    concept: { title: 'Heritage garden wedding', summary: 'A warm, family-first celebration.', themeIdeas: ['Marigold arches'] },
+    concept: {
+      title: 'Heritage garden wedding',
+      summary: 'A warm, family-first celebration.',
+      themeIdeas: ['Marigold arches'],
+    },
     assumptions: ['Prices are rough estimates for a mid-size Indian city.'],
     budgetAllocation: [
       { category: 'venue', percent: 25, rationale: 'Garden lawn' },
@@ -104,12 +108,29 @@ export function makeAiPlan(overrides: Partial<AiPlan> = {}): AiPlan {
     ],
     expenseEstimates: [{ category: 'catering', item: 'Dinner for 300', estimatedAmount: 450_000.4 }],
     timeline: [
-      { title: 'Book venue', description: 'Visit three venues', category: 'venue', priority: 'high', daysBeforeEvent: 180 },
-      { title: 'Order invitations', description: 'Finalise wording', category: 'invitations', priority: 'medium', daysBeforeEvent: 60 },
+      {
+        title: 'Book venue',
+        description: 'Visit three venues',
+        category: 'venue',
+        priority: 'high',
+        daysBeforeEvent: 180,
+      },
+      {
+        title: 'Order invitations',
+        description: 'Finalise wording',
+        category: 'invitations',
+        priority: 'medium',
+        daysBeforeEvent: 60,
+      },
     ],
     vendorChecklist: [{ category: 'caterer', questionsToAsk: ['Is a tasting included?'] }],
     guestChecklist: ['Collect addresses'],
-    ideas: { decoration: ['Marigolds'], food: ['Regional thali'], activities: ['Mehendi corner'], entertainment: ['Live band'] },
+    ideas: {
+      decoration: ['Marigolds'],
+      food: ['Regional thali'],
+      activities: ['Mehendi corner'],
+      entertainment: ['Live band'],
+    },
     daySchedule: [{ time: '18:00', activity: 'Guests arrive', notes: '' }],
     risks: [{ risk: 'Rain', contingency: 'Covered hall on standby' }],
     costSavingTips: ['Use seasonal flowers'],

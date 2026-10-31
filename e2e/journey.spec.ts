@@ -89,7 +89,9 @@ test.describe('Festiva AI: main journey', () => {
     await expect(page.getByText('Heritage garden wedding').first()).toBeVisible();
   });
 
-  test('invalid input is rejected with readable messages and deleting an event asks for confirmation', async ({ page }) => {
+  test('invalid input is rejected with readable messages and deleting an event asks for confirmation', async ({
+    page,
+  }) => {
     await signIn(page);
     await page.goto('/events/new');
     await page.getByLabel('Event name').fill('Tiny party');
@@ -100,7 +102,10 @@ test.describe('Festiva AI: main journey', () => {
     await expect(page).toHaveURL(/events\/new/);
 
     await page.goto('/dashboard');
-    await page.getByRole('button', { name: /^Delete / }).first().click();
+    await page
+      .getByRole('button', { name: /^Delete / })
+      .first()
+      .click();
     await expect(page.getByRole('dialog')).toBeVisible();
     await page.getByRole('button', { name: 'Cancel' }).click();
     await expect(page.getByRole('dialog')).toHaveCount(0);

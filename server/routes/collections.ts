@@ -6,7 +6,7 @@ import type { ChildCollection } from '../data/repository';
 import { currentUser } from '../middleware/auth';
 import { eventIdParam, requireEvent, type RouteDeps } from './context';
 
-interface CollectionRouteOptions<Input extends object, Rec extends Input> {
+interface CollectionRouteOptions<Input extends object, Rec extends Input & { id: string }> {
   collection: ChildCollection<Input, Rec>;
   /** Rules for a complete record. Also re-applied to the merged result of an update. */
   createSchema: z.ZodType<Input>;
@@ -21,7 +21,7 @@ interface CollectionRouteOptions<Input extends object, Rec extends Input> {
  * Builds create / update / delete routes for a collection that belongs to one event.
  * Mounted at /api/events/:eventId/<name>; the event must belong to the signed-in user.
  */
-export function createCollectionRouter<Input extends object, Rec extends Input>(
+export function createCollectionRouter<Input extends object, Rec extends Input & { id: string }>(
   deps: RouteDeps,
   options: CollectionRouteOptions<Input, Rec>,
 ): Router {
@@ -57,7 +57,7 @@ export function createCollectionRouter<Input extends object, Rec extends Input>(
     if (!itemId.success) throw notFound(label);
 
     const patch = parseWith(options.updateSchema, req.body);
-    const existing = (await collection.list(user.id, event.id)).find((record) => (record as { id?: string }).id === itemId.data);
+    const existing = (await collection.list(user.id, event.id)).find((record) => record.id === itemId.data);
     if (!existing) throw notFound(label);
 
     parseWith(options.createSchema, { ...existing, ...patch });
