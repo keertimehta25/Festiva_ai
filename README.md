@@ -4,10 +4,6 @@
 
 A GenAI-powered planning assistant for weddings, birthdays, anniversaries, community and college events. It turns a short form into a personalised plan, then keeps the budget, timeline, vendors and an event-aware AI copilot in one saved workspace. Built for **Challenge 5: Celebration & Event Planner**.
 
-- Live app: _add after deployment_ (see [Deployment guide](docs/DEPLOYMENT.md))
-- Demo video: _add after recording_ (script in [docs/SUBMISSION.md](docs/SUBMISSION.md))
-- Architecture and conventions: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) · [CONTRIBUTING.md](CONTRIBUTING.md) · [SECURITY.md](SECURITY.md)
-
 > **Verification status, stated plainly.** Everything below marked "tested" was run in the development environment: 212 unit/integration tests, 3 browser tests, lint, type check, production build and `npm audit`. The app has **not** yet been run against a real Supabase project or the real Gemini API (those need your accounts and keys), and it is **not yet deployed**. The Gemini request body uses the documented SDK field names (`responseMimeType`, `responseJsonSchema`) but could not be exercised here, so confirm it with `scripts/verify-deployment.mjs` first. [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) covers exactly how to deploy and confirm.
 
 ## Problem and why it helps
@@ -136,17 +132,6 @@ Vercel (web) + Render (API) + Supabase (auth, database) + Gemini. Exact click-by
 ## Production build size
 
 `npm run build:client` with real Supabase variables: main chunk ≈ **510 kB (149 kB gzipped)**, which includes the Supabase auth client; pages load as separate lazy chunks (the largest, the budget tab, is ≈ 15 kB), CSS ≈ 15 kB (4 kB gzipped). Without the variables the auth client is tree-shaken, so measure with them set. The chunk-size warning from Vite is expected for this reason.
-
-## Repository size
-
-```bash
-git count-objects -vH                                   # size of history
-du -sh --exclude=node_modules --exclude=dist --exclude=.git .   # working tree
-git rev-list --objects --all | git cat-file --batch-check='%(objecttype) %(objectname) %(objectsize) %(rest)' | awk '$1=="blob"' | sort -k3 -n -r | head   # largest files ever committed
-git log --all -p -S"AIza" --oneline | head              # any Gemini-style key ever committed (expect nothing)
-```
-
-Source tree measured at ≈ 1.1 MB without `node_modules`, `dist` and `.git`, far below the 10 MB limit.
 
 ## Known limitations
 
