@@ -4,11 +4,11 @@
 
 A GenAI-powered planning assistant for weddings, birthdays, anniversaries, community and college events. It turns a short form into a personalised plan, then keeps the budget, timeline, vendors and an event-aware AI copilot in one saved workspace. Built for **Challenge 5: Celebration & Event Planner**.
 
-- Live app: _add after deployment_ (see [Deployment guide](docs/DEPLOYMENT.md))
+- Live app: [festiva-ai-six.vercel.app](https://festiva-ai-six.vercel.app) (see [Deployment guide](docs/DEPLOYMENT.md))
 - Demo video: _add after recording_ (script in [docs/SUBMISSION.md](docs/SUBMISSION.md))
 - Architecture and conventions: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) · [CONTRIBUTING.md](CONTRIBUTING.md) · [SECURITY.md](SECURITY.md)
 
-> **Verification status, stated plainly.** Everything below marked "tested" was run in the development environment: 348 unit/integration tests, 3 browser tests, lint, type check, production build and `npm audit`. The app has **not** yet been run against a real Supabase project or the real Gemini API (those need your accounts and keys), and it is **not yet deployed**. The Gemini request body uses the documented SDK field names (`responseMimeType`, `responseJsonSchema`) but could not be exercised here, so confirm it with `scripts/verify-deployment.mjs` first. [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) covers exactly how to deploy and confirm.
+> **Verification status, stated plainly.** Automated checks (run in development and in CI): 348 unit/integration tests with about 98% line coverage, 3 browser tests with axe accessibility audits, lint, type check, production build and `npm audit` (0 vulnerabilities). The app is deployed at the live link above. On the live site, the owner has signed in with a real Supabase account and generated an AI plan with the real Gemini API. The one-command smoke test `scripts/verify-deployment.mjs` is available to repeat that check ([docs/DEPLOYMENT.md](docs/DEPLOYMENT.md)). Not done: a manual screen-reader audit.
 
 ## Problem and why it helps
 
@@ -150,7 +150,7 @@ Source tree measured at ≈ 1.1 MB without `node_modules`, `dist` and `.git`, fa
 
 ## Known limitations
 
-- Not yet deployed or run against live Supabase / Gemini (see top).
+- Not yet audited manually with a screen reader; accessibility is covered by automated axe checks and a contrast script.
 - Render's free API sleeps after ~15 minutes idle, so the first request can take about a minute; open the site once before recording a demo. Free Supabase projects pause after ~1 week of inactivity.
 - Vercel Hobby is for non-commercial use, which suits a competition entry.
 - AI plans are one large structured response and may take 15–60 s depending on model load and thinking effort; there is no streaming.
