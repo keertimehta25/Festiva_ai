@@ -24,8 +24,8 @@ export default defineConfig({
         'server/index.ts',
       ],
       reporter: ['text-summary'],
-      // A floor, not a goal: it stops the suite from quietly getting weaker.
-      thresholds: { lines: 70, statements: 70, functions: 60, branches: 65 },
+      // A floor that keeps the suite from quietly getting weaker as the app grows.
+      thresholds: { lines: 95, statements: 94, functions: 90, branches: 82 },
     },
   },
 });

@@ -516,3 +516,74 @@ p.mt-sm {
 p.mt-2xs {
   margin: 2px 0 0;
 }
+
+/* Budget tab */
+.text-danger {
+  color: var(--rose);
+}
+.chart-table {
+  flex: 1;
+  min-width: 280px;
+}
+.swatch {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+  margin-right: 8px;
+}
+.idea-detail {
+  margin: 0.25rem 0 0;
+}
+
+/* Tasks tab */
+.view-switch {
+  display: flex;
+  gap: 4px;
+}
+.option-bare {
+  border: 0;
+  padding: 0;
+  background: none;
+  flex: 1;
+}
+.task-done {
+  text-decoration: line-through;
+  color: var(--ink-muted);
+}
+.mt-xs {
+  margin-top: 4px;
+}
+p.mt-xs {
+  margin: 4px 0 0;
+}
+
+/* Copilot tab */
+.chat-turn {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+.chat-turn-user {
+  align-items: flex-end;
+}
+.chat-turn-assistant {
+  align-items: flex-start;
+}
+.spinner-inline {
+  display: inline-block;
+  margin-right: 8px;
+  vertical-align: middle;
+}
+.textarea-compact {
+  min-height: 72px;
+}
+.card-muted {
+  background: var(--surface-muted);
+}
+.mb-xs {
+  margin-bottom: 4px;
+}
+.chat-log-wrap {
+  display: contents;
+}

@@ -44,11 +44,9 @@ export function ProposalCard({ proposal, event }: { proposal: AiProposal; event:
   }
 
   return (
-    <div className="card" style={{ background: 'var(--surface-muted)' }}>
-      <p className="eyebrow" style={{ marginBottom: 4 }}>
-        Suggested change: not applied yet
-      </p>
-      <p style={{ marginBottom: 4 }}>
+    <div className="card card-muted">
+      <p className="eyebrow mb-xs">Suggested change: not applied yet</p>
+      <p className="mb-xs">
         <strong>{proposal.summary}</strong>
       </p>
       <p className="small muted">

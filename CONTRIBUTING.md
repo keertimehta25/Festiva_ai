@@ -13,7 +13,6 @@ npm run dev:client        # web app on :5173
 
 ```bash
 npm run check             # typecheck, strict lint, unit / API / component tests
-npm run coverage          # tests with a coverage report
 npm run test:e2e          # Playwright + axe (run `npx playwright install chromium` once)
 npm run format:check      # Prettier
 ```

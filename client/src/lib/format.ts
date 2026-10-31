@@ -28,3 +28,18 @@ export function parseWholeNumber(input: string): number {
   const cleaned = input.replace(/[,\s₹]/g, '');
   return /^\d+$/.test(cleaned) ? Number(cleaned) : Number.NaN;
 }
+
+/** Like `parseWholeNumber`, but an empty box means 0 (for amounts that may be left blank). */
+export function parseOptionalAmount(input: string): number {
+  return input.trim() === '' ? 0 : parseWholeNumber(input);
+}
+
+/** An empty text box means "no value". */
+export function blankToNull(input: string): string | null {
+  return input === '' ? null : input;
+}
+
+/** Shows an amount in a text box: nothing for zero, so a new record starts with an empty box. */
+export function amountToText(amount: number | undefined): string {
+  return amount !== undefined && amount > 0 ? String(amount) : '';
+}

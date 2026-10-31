@@ -1,4 +1,3 @@
-import { useState, type SyntheticEvent } from 'react';
 import {
   PRIORITIES,
   PRIORITY_LABELS,
@@ -7,14 +6,14 @@ import {
   TASK_STATUSES,
   TASK_STATUS_LABELS,
 } from '@shared/constants';
-import { taskInputSchema } from '@shared/schemas';
+import { taskInputSchema, type TaskInput } from '@shared/schemas';
 import type { TaskRecord, VendorRecord } from '@shared/types';
-import { Field } from '../../components/ui/Field';
-import { ErrorNotice } from '../../components/ui/Feedback';
-import { Modal } from '../../components/ui/Modal';
+import { FormDialog, SelectField, TextAreaField, TextField, optionsFrom } from '../../components/ui/FormControls';
 import { useWorkspaceMutation } from '../../hooks/useEvents';
+import { useFormDialog } from '../../hooks/useFormDialog';
 import { api } from '../../lib/api';
-import { fieldErrorsFromApi, fieldErrorsFromZod, type FieldErrors } from '../../lib/formErrors';
+import { blankToNull } from '../../lib/format';
+import { vendorOptions } from '../vendors/vendorOptions';
 
 interface TaskDialogProps {
   eventId: string;
@@ -24,124 +23,94 @@ interface TaskDialogProps {
 }
 
 export function TaskDialog({ eventId, task, vendors, onClose }: TaskDialogProps) {
-  const [form, setForm] = useState({
-    title: task?.title ?? '',
-    description: task?.description ?? '',
-    dueDate: task?.dueDate ?? '',
-    priority: task?.priority ?? 'medium',
-    status: task?.status ?? 'pending',
-    category: task?.category ?? 'planning',
-    notes: task?.notes ?? '',
-    vendorId: task?.vendorId ?? '',
-  });
-  const [errors, setErrors] = useState<FieldErrors>({});
-  const [failure, setFailure] = useState<unknown>(null);
-  const save = useWorkspaceMutation(eventId, (input: ReturnType<typeof taskInputSchema.parse>) =>
+  const mutation = useWorkspaceMutation(eventId, (input: TaskInput) =>
     task ? api.updateTask(eventId, task.id, input) : api.createTask(eventId, input),
   );
-  const set = (key: keyof typeof form, value: string) => setForm((current) => ({ ...current, [key]: value }));
-
-  async function handleSubmit(event: SyntheticEvent) {
-    event.preventDefault();
-    setFailure(null);
-    const parsed = taskInputSchema.safeParse({
-      ...form,
-      dueDate: form.dueDate === '' ? null : form.dueDate,
-      vendorId: form.vendorId === '' ? null : form.vendorId,
-    });
-    if (!parsed.success) {
-      setErrors(fieldErrorsFromZod(parsed.error));
-      return;
-    }
-    setErrors({});
-    try {
-      await save.mutateAsync(parsed.data);
-      onClose();
-    } catch (error) {
-      setErrors(fieldErrorsFromApi(error));
-      setFailure(error);
-    }
-  }
+  const { form, set, errors, failure, submit } = useFormDialog({
+    initial: {
+      title: task?.title ?? '',
+      description: task?.description ?? '',
+      dueDate: task?.dueDate ?? '',
+      priority: task?.priority ?? 'medium',
+      status: task?.status ?? 'pending',
+      category: task?.category ?? 'planning',
+      notes: task?.notes ?? '',
+      vendorId: task?.vendorId ?? '',
+    },
+    schema: taskInputSchema,
+    toInput: (values) => ({ ...values, dueDate: blankToNull(values.dueDate), vendorId: blankToNull(values.vendorId) }),
+    save: mutation.mutateAsync,
+    onDone: onClose,
+  });
 
   return (
-    <Modal title={task ? 'Edit task' : 'Add task'} onClose={onClose}>
-      <form onSubmit={(event) => void handleSubmit(event)} noValidate>
-        {failure !== null && <ErrorNotice error={failure} />}
-        <Field label="Task" error={errors.title}>
-          <input className="input" value={form.title} maxLength={140} onChange={(e) => set('title', e.target.value)} />
-        </Field>
-        <Field label="Description" optional error={errors.description}>
-          <textarea
-            className="textarea"
-            value={form.description}
-            maxLength={500}
-            onChange={(e) => set('description', e.target.value)}
-          />
-        </Field>
-        <div className="form-grid">
-          <Field label="Due date" optional error={errors.dueDate}>
-            <input
-              className="input"
-              type="date"
-              value={form.dueDate}
-              onChange={(e) => set('dueDate', e.target.value)}
-            />
-          </Field>
-          <Field label="Priority">
-            <select className="select" value={form.priority} onChange={(e) => set('priority', e.target.value)}>
-              {PRIORITIES.map((p) => (
-                <option key={p} value={p}>
-                  {PRIORITY_LABELS[p]}
-                </option>
-              ))}
-            </select>
-          </Field>
-          <Field label="Status">
-            <select className="select" value={form.status} onChange={(e) => set('status', e.target.value)}>
-              {TASK_STATUSES.map((s) => (
-                <option key={s} value={s}>
-                  {TASK_STATUS_LABELS[s]}
-                </option>
-              ))}
-            </select>
-          </Field>
-          <Field label="Category">
-            <select className="select" value={form.category} onChange={(e) => set('category', e.target.value)}>
-              {TASK_CATEGORIES.map((c) => (
-                <option key={c} value={c}>
-                  {TASK_CATEGORY_LABELS[c]}
-                </option>
-              ))}
-            </select>
-          </Field>
-          <Field label="Related vendor" optional error={errors.vendorId}>
-            <select className="select" value={form.vendorId} onChange={(e) => set('vendorId', e.target.value)}>
-              <option value="">None</option>
-              {vendors.map((v) => (
-                <option key={v.id} value={v.id}>
-                  {v.name}
-                </option>
-              ))}
-            </select>
-          </Field>
-        </div>
-        <Field label="Notes" optional error={errors.notes}>
-          <textarea
-            className="textarea"
-            value={form.notes}
-            maxLength={500}
-            onChange={(e) => set('notes', e.target.value)}
-          />
-        </Field>
-        <div className="form-actions">
-          <button type="button" className="btn btn-secondary" onClick={onClose}>
-            Cancel
-          </button>
-          <button type="submit" className="btn btn-primary" disabled={save.isPending}>
-            {save.isPending ? 'Saving…' : task ? 'Save changes' : 'Add task'}
-          </button>
-        </div>
-      </form>
-    </Modal>
+    <FormDialog
+      title={task ? 'Edit task' : 'Add task'}
+      onClose={onClose}
+      onSubmit={submit}
+      failure={failure}
+      pending={mutation.isPending}
+      submitLabel={task ? 'Save changes' : 'Add task'}
+    >
+      <TextField
+        label="Task"
+        value={form.title}
+        maxLength={140}
+        error={errors.title}
+        onChange={(v) => set('title', v)}
+      />
+      <TextAreaField
+        label="Description"
+        optional
+        value={form.description}
+        maxLength={500}
+        error={errors.description}
+        onChange={(v) => set('description', v)}
+      />
+      <div className="form-grid">
+        <TextField
+          label="Due date"
+          optional
+          type="date"
+          value={form.dueDate}
+          error={errors.dueDate}
+          onChange={(v) => set('dueDate', v)}
+        />
+        <SelectField
+          label="Priority"
+          value={form.priority}
+          options={optionsFrom(PRIORITIES, PRIORITY_LABELS)}
+          onChange={(v) => set('priority', v)}
+        />
+        <SelectField
+          label="Status"
+          value={form.status}
+          options={optionsFrom(TASK_STATUSES, TASK_STATUS_LABELS)}
+          onChange={(v) => set('status', v)}
+        />
+        <SelectField
+          label="Category"
+          value={form.category}
+          options={optionsFrom(TASK_CATEGORIES, TASK_CATEGORY_LABELS)}
+          onChange={(v) => set('category', v)}
+        />
+        <SelectField
+          label="Related vendor"
+          optional
+          value={form.vendorId}
+          error={errors.vendorId}
+          options={vendorOptions(vendors, 'None')}
+          onChange={(v) => set('vendorId', v)}
+        />
+      </div>
+      <TextAreaField
+        label="Notes"
+        optional
+        value={form.notes}
+        maxLength={500}
+        error={errors.notes}
+        onChange={(v) => set('notes', v)}
+      />
+    </FormDialog>
   );
 }

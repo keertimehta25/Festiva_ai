@@ -95,3 +95,45 @@ describe('api client', () => {
     });
   });
 });
+
+describe('api endpoints', () => {
+  afterEach(() => vi.unstubAllGlobals());
+
+  // Each call must hit the documented method and path, so a typo in a route cannot slip through.
+  const endpoints: [name: string, call: () => Promise<unknown>, method: string, path: string][] = [
+    ['listEvents', () => api.listEvents(), 'GET', '/api/events'],
+    ['getWorkspace', () => api.getWorkspace('e1'), 'GET', '/api/events/e1'],
+    ['createEvent', () => api.createEvent({ name: 'x' }), 'POST', '/api/events'],
+    ['createSample', () => api.createSample(), 'POST', '/api/events/sample'],
+    ['updateEvent', () => api.updateEvent('e1', { name: 'x' }), 'PATCH', '/api/events/e1'],
+    ['deleteEvent', () => api.deleteEvent('e1'), 'DELETE', '/api/events/e1'],
+    ['createTask', () => api.createTask('e1', { title: 'x' }), 'POST', '/api/events/e1/tasks'],
+    ['updateTask', () => api.updateTask('e1', 't1', { title: 'x' }), 'PATCH', '/api/events/e1/tasks/t1'],
+    ['deleteTask', () => api.deleteTask('e1', 't1'), 'DELETE', '/api/events/e1/tasks/t1'],
+    ['createExpense', () => api.createExpense('e1', { title: 'x' }), 'POST', '/api/events/e1/expenses'],
+    ['updateExpense', () => api.updateExpense('e1', 'x1', { title: 'x' }), 'PATCH', '/api/events/e1/expenses/x1'],
+    ['deleteExpense', () => api.deleteExpense('e1', 'x1'), 'DELETE', '/api/events/e1/expenses/x1'],
+    ['createVendor', () => api.createVendor('e1', { name: 'x' }), 'POST', '/api/events/e1/vendors'],
+    ['updateVendor', () => api.updateVendor('e1', 'v1', { name: 'x' }), 'PATCH', '/api/events/e1/vendors/v1'],
+    ['deleteVendor', () => api.deleteVendor('e1', 'v1'), 'DELETE', '/api/events/e1/vendors/v1'],
+    ['generatePlan', () => api.generatePlan('e1'), 'POST', '/api/events/e1/ai/plan'],
+    ['applyPlanTasks', () => api.applyPlanTasks('e1'), 'POST', '/api/events/e1/ai/plan/apply-tasks'],
+    ['applyPlanBudget', () => api.applyPlanBudget('e1'), 'POST', '/api/events/e1/ai/plan/apply-budget'],
+    ['chat', () => api.chat('e1', 'hi', []), 'POST', '/api/events/e1/ai/chat'],
+    ['suggestSavings', () => api.suggestSavings('e1'), 'POST', '/api/events/e1/ai/savings'],
+  ];
+
+  it.each(endpoints)('%s uses %s %s', async (_name, call, method, path) => {
+    configureApi({ getToken: async () => null, onUnauthorized: vi.fn() });
+    const fetchMock = vi.fn(async () =>
+      method === 'DELETE' ? new Response(null, { status: 204 }) : json(200, { data: {} }),
+    );
+    vi.stubGlobal('fetch', fetchMock);
+
+    await call();
+
+    const [url, init] = fetchMock.mock.calls[0] as unknown as [string, RequestInit];
+    expect(url).toBe(path);
+    expect(init.method).toBe(method);
+  });
+});
