@@ -6,6 +6,7 @@ import {
 } from '@shared/constants';
 import type { StoredPlan } from '@shared/types';
 import { formatRupees } from '../../lib/format';
+import { ScrollRegion } from '../../components/ui/ScrollRegion';
 
 const List = ({ items }: { items: string[] }) =>
   items.length === 0 ? (
@@ -44,7 +45,7 @@ export function BudgetSection({ plan, totalBudget }: { plan: StoredPlan; totalBu
         Percentages come from the AI. The rupee amounts are calculated by the app from your total of{' '}
         {formatRupees(totalBudget)}.
       </p>
-      <div className="table-wrap">
+      <ScrollRegion label="Suggested budget allocation by category">
         <table>
           <caption className="visually-hidden">Suggested budget allocation by category</caption>
           <thead>
@@ -70,9 +71,9 @@ export function BudgetSection({ plan, totalBudget }: { plan: StoredPlan; totalBu
             ))}
           </tbody>
         </table>
-      </div>
+      </ScrollRegion>
       <h3 className="mt-lg">Estimated expenses</h3>
-      <div className="table-wrap">
+      <ScrollRegion label="Itemised estimated expenses">
         <table>
           <caption className="visually-hidden">Itemised estimated expenses</caption>
           <thead>
@@ -102,7 +103,7 @@ export function BudgetSection({ plan, totalBudget }: { plan: StoredPlan; totalBu
             </tr>
           </tfoot>
         </table>
-      </div>
+      </ScrollRegion>
     </section>
   );
 }

@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import { defaultAllocations } from '@shared/calc/budget';
 import { BUDGET_CATEGORIES, BUDGET_CATEGORY_LABELS, EVENT_TYPE_LABELS, type EventType } from '@shared/constants';
 import { formatRupees } from '../lib/format';
+import { ScrollRegion } from '../components/ui/ScrollRegion';
 
 const FEATURES = [
   {
@@ -93,7 +94,7 @@ export function LandingPage() {
                 </button>
               ))}
             </div>
-            <div className="table-wrap">
+            <ScrollRegion label="Example budget split">
               <table>
                 <caption className="visually-hidden">
                   Example budget split for a {EVENT_TYPE_LABELS[type].toLowerCase()} with a ₹8,00,000 budget
@@ -119,7 +120,7 @@ export function LandingPage() {
                   ))}
                 </tbody>
               </table>
-            </div>
+            </ScrollRegion>
           </aside>
         </div>
       </section>

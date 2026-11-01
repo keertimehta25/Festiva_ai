@@ -1,4 +1,4 @@
-import { defineConfig } from '@playwright/test';
+import { defineConfig, devices } from '@playwright/test';
 
 const SUPABASE_ENV = 'VITE_SUPABASE_URL=https://e2e.supabase.test VITE_SUPABASE_ANON_KEY=e2e-anon-key';
 
@@ -16,6 +16,11 @@ export default defineConfig({
     launchOptions: { executablePath: process.env.PW_CHROMIUM_PATH },
     trace: 'retain-on-failure',
   },
+  // The same journeys run on a desktop viewport and on a phone, including the accessibility audit.
+  projects: [
+    { name: 'desktop', use: { ...devices['Desktop Chrome'] } },
+    { name: 'mobile', use: { ...devices['Pixel 7'] } },
+  ],
   webServer: [
     {
       command: 'npx tsx e2e/server.ts',

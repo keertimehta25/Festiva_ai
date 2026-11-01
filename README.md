@@ -8,7 +8,7 @@ A GenAI-powered planning assistant for weddings, birthdays, anniversaries, commu
 - Demo video: _add after recording_ (script in [docs/SUBMISSION.md](docs/SUBMISSION.md))
 - Architecture and conventions: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) · [CONTRIBUTING.md](CONTRIBUTING.md) · [SECURITY.md](SECURITY.md)
 
-> **Verification status, stated plainly.** Automated checks (run in development and in CI): 348 unit/integration tests with about 98% line coverage, 3 browser tests with axe accessibility audits, lint, type check, production build and `npm audit` (0 vulnerabilities). The app is deployed at the live link above. On the live site, the owner has signed in with a real Supabase account and generated an AI plan with the real Gemini API. The one-command smoke test `scripts/verify-deployment.mjs` is available to repeat that check ([docs/DEPLOYMENT.md](docs/DEPLOYMENT.md)). Not done: a manual screen-reader audit.
+> **Verification status, stated plainly.** Automated checks (run in development and in CI): 354 unit/integration tests with 98% line coverage, 6 browser tests (3 journeys on desktop and on a phone) with axe accessibility audits, lint, type check, production build and `npm audit` (0 vulnerabilities). The app is deployed at the live link above. On the live site, the owner has signed in with a real Supabase account and generated an AI plan with the real Gemini API. The one-command smoke test `scripts/verify-deployment.mjs` is available to repeat that check ([docs/DEPLOYMENT.md](docs/DEPLOYMENT.md)). Not done: a manual screen-reader audit.
 
 ## Problem and why it helps
 
@@ -91,12 +91,12 @@ Target WCAG 2.2 AA. Semantic landmarks and heading order, skip link, labelled co
 
 ## Testing
 
-| Layer                 | Tool                                                 | Result when last run                               |
-| --------------------- | ---------------------------------------------------- | -------------------------------------------------- |
-| Unit, API, components | Vitest, React Testing Library, Supertest, vitest-axe | **348 passed** (31 files, about 98% line coverage) |
-| Browser journey + axe | Playwright                                           | **3 passed**                                       |
-| Types / lint          | `tsc`, ESLint (+ jsx-a11y)                           | clean                                              |
-| Dependencies          | `npm audit`                                          | 0 vulnerabilities                                  |
+| Layer                  | Tool                                                 | Result when last run                         |
+| ---------------------- | ---------------------------------------------------- | -------------------------------------------- |
+| Unit, API, components  | Vitest, React Testing Library, Supertest, vitest-axe | **354 passed** (33 files, 98% line coverage) |
+| Browser journeys + axe | Playwright (desktop and Pixel 7)                     | **6 passed** (3 journeys × 2 screens)        |
+| Types / lint           | `tsc`, ESLint (+ jsx-a11y)                           | clean                                        |
+| Dependencies           | `npm audit`                                          | 0 vulnerabilities                            |
 
 Covers: event form validation (invalid dates, guest counts, budgets), budget totals / remaining / overspend, expense create and update, task progress, vendor payments, AI schema validation, missing / invalid AI config, provider failures and timeouts, API validation, authentication and cross-user access, main navigation and creation flow, and the full browser journey (create → AI plan → expense updates balance → task → vendor → copilot proposal needs Apply → data survives reload). External services are mocked in tests; the production AI client is real and untouched by the mocks. The browser tests use a canned AI answer, so **the live Gemini call itself is verified only by `verify-deployment.mjs` with your key**.
 
@@ -147,6 +147,21 @@ git log --all -p -S"AIza" --oneline | head              # any Gemini-style key e
 ```
 
 Source tree measured at ≈ 1.1 MB without `node_modules`, `dist` and `.git`, far below the 10 MB limit.
+
+## Evaluation criteria
+
+| Criterion                   | How it is addressed                                                                                                                                                                                                                                                    | Where to look                                                                                          |
+| --------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------ |
+| Code quality                | Strict TypeScript; typescript-eslint `strictTypeChecked` and jsx-a11y with zero findings; Prettier enforced in CI; shared zod schemas; a repository interface between routes and storage; thin routes; every source file under 250 lines (enforced by a test)          | `shared/`, `server/`, [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md), [CONTRIBUTING.md](CONTRIBUTING.md) |
+| Security                    | Keys only on the server; Supabase token verified on every private route; every query scoped to the user; row-level security; zod on every input and every AI answer; rate limits; CSP, CORS allow-list, body-size cap; `npm audit` in CI                               | [SECURITY.md](SECURITY.md), `server/app.ts`, `server/middleware/`, `supabase/schema.sql`               |
+| Efficiency                  | Money and dates are computed by code, never by the AI; one AI call per request; oversized AI answers are trimmed instead of retried; lazy-loaded screens; totals computed in the database; bounded queries; main script about 149 kB gzipped including the auth client | `shared/calc/`, `server/ai/geminiClient.ts`, `client/src/App.tsx`                                      |
+| Testing                     | 354 unit and integration tests and 6 real-browser tests; 98% line coverage with thresholds enforced in CI; authorization, AI failure and validation paths covered                                                                                                      | [docs/TESTING.md](docs/TESTING.md), `shared/`, `server/`, `client/src/`, `e2e/`                        |
+| Accessibility               | WCAG 2.2 AA target; axe in component tests and in real Chromium (with colour contrast) on desktop and mobile; 23 contrast pairs checked; keyboard-reachable scroll regions; error summaries; live regions                                                              | [docs/ACCESSIBILITY.md](docs/ACCESSIBILITY.md), `e2e/`, `scripts/check-contrast.mjs`                   |
+| Problem statement alignment | Weddings, birthdays, anniversaries, community and college events; AI plan, budget, timeline, vendors and an event-aware copilot that works together in one saved workspace; India-first formats and options                                                            | [Features](#features), [GenAI integration](#genai-integration)                                         |
+
+## Docs
+
+[Architecture](docs/ARCHITECTURE.md) · [Testing](docs/TESTING.md) · [Accessibility](docs/ACCESSIBILITY.md) · [API](docs/API.md) · [Deployment](docs/DEPLOYMENT.md) · [Security](SECURITY.md) · [Contributing](CONTRIBUTING.md)
 
 ## Known limitations
 

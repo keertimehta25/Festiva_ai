@@ -3,6 +3,7 @@ import type { BudgetSummary } from '@shared/calc/budget';
 import { BUDGET_CATEGORY_LABELS } from '@shared/constants';
 import { formatRupees } from '../../lib/format';
 import { categoryColor, DonutChart } from './DonutChart';
+import { ScrollRegion } from '../../components/ui/ScrollRegion';
 
 const STATUS_TEXT = { ok: 'On track', warning: 'Nearly used', over: 'Over budget' } as const;
 const STATUS_BADGE = { ok: 'badge-success', warning: 'badge-warning', over: 'badge-danger' } as const;
@@ -29,7 +30,7 @@ export function CategoryBreakdown({ budget, onEdit }: CategoryBreakdownProps) {
           slices={budget.categories.map((row) => ({ category: row.category, amount: row.allocated }))}
           total={budget.totalBudget}
         />
-        <div className="table-wrap chart-table">
+        <ScrollRegion label="Planned, estimated and actual amounts for each budget category" className="chart-table">
           <table>
             <caption className="visually-hidden">
               Planned, estimated and actual amounts for each budget category
@@ -80,7 +81,7 @@ export function CategoryBreakdown({ budget, onEdit }: CategoryBreakdownProps) {
               </tr>
             </tfoot>
           </table>
-        </div>
+        </ScrollRegion>
       </div>
     </section>
   );

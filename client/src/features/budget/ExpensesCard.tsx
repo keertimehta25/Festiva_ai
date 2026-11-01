@@ -3,6 +3,7 @@ import { BUDGET_CATEGORY_LABELS } from '@shared/constants';
 import type { ExpenseRecord, VendorRecord } from '@shared/types';
 import { EmptyState } from '../../components/ui/Feedback';
 import { formatRupees } from '../../lib/format';
+import { ScrollRegion } from '../../components/ui/ScrollRegion';
 
 interface ExpensesCardProps {
   expenses: ExpenseRecord[];
@@ -29,7 +30,7 @@ export function ExpensesCard({ expenses, vendors, onAdd, onEdit, onDelete }: Exp
           Add what you plan to spend and what you have paid. Totals and warnings update automatically.
         </EmptyState>
       ) : (
-        <div className="table-wrap">
+        <ScrollRegion label="Expenses for this event">
           <table>
             <caption className="visually-hidden">Expenses for this event</caption>
             <thead>
@@ -87,7 +88,7 @@ export function ExpensesCard({ expenses, vendors, onAdd, onEdit, onDelete }: Exp
               ))}
             </tbody>
           </table>
-        </div>
+        </ScrollRegion>
       )}
     </section>
   );

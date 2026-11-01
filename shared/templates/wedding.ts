@@ -1,0 +1,111 @@
+import type { TemplateTask } from './template';
+import { t } from './template';
+
+/** Starter tasks for a wedding, which needs the longest lead times. */
+export const WEDDING_TASKS: TemplateTask[] = [
+  t(
+    'Fix budget and draft guest list',
+    'planning',
+    'high',
+    240,
+    'Agree the total budget with both families and list the likely guests for each function.',
+  ),
+  t(
+    'Book the venue and confirm dates',
+    'venue',
+    'high',
+    210,
+    'Visit shortlisted venues, compare quotes and pay the booking advance in writing.',
+  ),
+  t(
+    'Shortlist caterers and plan a tasting',
+    'catering',
+    'high',
+    180,
+    'Compare menus, per-plate quotes and tasting slots for each function.',
+  ),
+  t(
+    'Book photographer and videographer',
+    'photography',
+    'high',
+    180,
+    'Review portfolios, confirm coverage hours and deliverables.',
+  ),
+  t(
+    'Book decorator and florist',
+    'decoration',
+    'medium',
+    150,
+    'Share colour palette and mood references; get itemised quotes.',
+  ),
+  t(
+    'Plan outfits, jewellery and fittings',
+    'attire',
+    'medium',
+    150,
+    'Order outfits early so alterations can be done without a rush.',
+  ),
+  t(
+    'Book makeup artist and hair stylist',
+    'attire',
+    'medium',
+    120,
+    'Schedule a trial and confirm travel and timing for the day.',
+  ),
+  t(
+    'Arrange guest accommodation and travel',
+    'accommodation',
+    'medium',
+    120,
+    'Block rooms for out-of-town guests and share pickup details.',
+  ),
+  t(
+    'Book music, DJ or sangeet performers',
+    'entertainment',
+    'medium',
+    100,
+    'Confirm the playlist, sound requirements and rehearsal slots.',
+  ),
+  t(
+    'Design and order invitations',
+    'invitations',
+    'high',
+    90,
+    'Finalise wording, languages and print or digital format.',
+  ),
+  t(
+    'Send invitations',
+    'invitations',
+    'high',
+    60,
+    'Send printed cards and digital invites to every guest on the list.',
+  ),
+  t(
+    'Track RSVPs and finalise headcount',
+    'guests',
+    'medium',
+    30,
+    'Follow up with guests who have not replied; confirm final numbers with the caterer.',
+  ),
+  t(
+    'Confirm transport for family and guests',
+    'transportation',
+    'medium',
+    21,
+    'Arrange vehicles for the baraat, airport pickups and venue shuttles.',
+  ),
+  t(
+    'Reconfirm all vendors and pending payments',
+    'planning',
+    'high',
+    7,
+    'Call every vendor, confirm arrival times and settle the balances that are due.',
+  ),
+  t(
+    'Share the day-of schedule with family and vendors',
+    'planning',
+    'medium',
+    2,
+    'Give a point person to each function so the family can enjoy the day.',
+  ),
+];
